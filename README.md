@@ -5,10 +5,11 @@ Simple stow-first dotfiles with idempotent setup.
 ## Layout
 - Each top-level directory is a stow package.
 - Package contents mirror `$HOME` exactly.
+- Per-host overrides live under `hosts/<hostname>/<package>` and are stowed after base packages.
 
 Example:
 ```
-hypr/.config/hypr/...
+hosts/<hostname>/hypr/.config/hypr/...
 ```
 
 ## Usage
@@ -19,20 +20,29 @@ stow --version
 
 Stow a single package:
 ```
-stow -t "$HOME" hypr
+stow -t "$HOME" hosts/<hostname>
 ```
 
 Restow (idempotent refresh):
 ```
-stow -t "$HOME" --restow hypr
+stow -t "$HOME" --restow hosts/<hostname>
 ```
 
-Stow everything in this repo:
+Stow all base packages:
 ```
-./scripts/stow-all.sh
+./scripts/stow-base.sh
+```
+
+Stow host-specific packages for this machine:
+```
+./scripts/stow-host.sh
+```
+
+Stow a specific host's packages:
+```
+./scripts/stow-host.sh <hostname>
 ```
 
 ## Notes
 - Keep only source-of-truth files here; avoid generated artifacts.
-- If you add host-specific overrides, create a separate package like
-  `hosts/<hostname>` and stow it after the base package.
+- Host packages should only contain overrides, so the base packages stay portable.
