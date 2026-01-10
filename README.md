@@ -18,14 +18,14 @@ Install stow if needed:
 stow --version
 ```
 
-Stow a single package:
+Stow a single host package:
 ```
-stow -t "$HOME" hosts/<hostname>
+stow -t "$HOME" hosts/<hostname>/<package>
 ```
 
 Restow (idempotent refresh):
 ```
-stow -t "$HOME" --restow hosts/<hostname>
+stow -t "$HOME" --restow hosts/<hostname>/<package>
 ```
 
 Stow all base packages:
