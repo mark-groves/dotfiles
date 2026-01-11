@@ -3,7 +3,7 @@
 Simple stow-first dotfiles with idempotent setup.
 
 ## Layout
-- Each top-level directory is a stow package.
+- Top-level directories (excluding `hosts` and `scripts`) are base stow packages.
 - Package contents mirror `$HOME` exactly.
 - Per-host overrides live under `hosts/<hostname>/<package>` and are stowed after base packages.
 
