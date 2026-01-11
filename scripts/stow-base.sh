@@ -16,7 +16,7 @@ packages=()
 while IFS= read -r -d '' dir; do
   pkg="${dir#./}"
   packages+=("$pkg")
-done < <(find . -maxdepth 1 -mindepth 1 -type d -not -path './.git*' -not -path './scripts' -print0)
+done < <(find . -maxdepth 1 -mindepth 1 -type d -not -path './.git*' -not -path './scripts' -not -path './hosts' -print0)
 
 # Fail fast if nothing is stowable.
 if [[ ${#packages[@]} -eq 0 ]]; then
