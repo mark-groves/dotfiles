@@ -1,0 +1,105 @@
+add_newline = false
+command_timeout = 700
+scan_timeout = 30
+
+palette = "ghost_glow"
+
+# bash doesn't support right prompt; draw the top-right corner in format instead
+right_format = ""
+
+# Left prompt: include top-right corner on the first line for bash
+format = """
+[╭](bold glow)$os$fill[╮](bold glow)
+[│](bold glow) $directory$git_branch$git_status$git_metrics$nodejs$python$rust$golang$java$lua$kubernetes$time
+[╰](bold glow)$character
+"""
+
+[palettes.ghost_glow]
+glow = "#0db9d7"
+halo = "#7aa2f7"
+dim  = "#787c99"
+err  = "#f7768e"
+
+[fill]
+symbol = "─"
+style  = "bold glow"
+
+[character]
+success_symbol = "[─❯](bold glow) "
+error_symbol   = "[─❯](bold err) "
+
+[os]
+disabled = false
+style = "bold halo"
+format = "[$symbol]($style) "
+
+[os.symbols]
+Arch = " "
+Macos = " "
+Ubuntu = " "
+Linux = "󰣇 "
+
+[directory]
+format = "[ $path]($style) "
+style = "bold glow"
+truncation_length = 3
+truncation_symbol = "…/"
+home_symbol = "~"
+
+[time]
+format = "[ $time]($style) "
+time_format = "%H:%M"
+style = "dim"
+
+[git_branch]
+symbol = " "
+format = "[$symbol$branch]($style) "
+style = "bold glow"
+
+[git_status]
+format = "[$all_status$ahead_behind]($style) "
+style = "dim"
+modified  = "󰛿 "
+staged    = "󰐗 "
+untracked = "󰋗 "
+renamed   = "󰑕 "
+deleted   = "󰍶 "
+stashed   = "󰏗 "
+ahead     = "󰁝 "
+behind    = "󰁅 "
+diverged  = "󰁝󰁅 "
+
+[git_metrics]
+disabled = false
+format = "([󰐗 $added]($added_style))([󰍶 $deleted]($deleted_style)) "
+added_style = "dim"
+deleted_style = "dim"
+
+[nodejs]
+format = "[ $version]($style) "
+style = "bold halo"
+
+[python]
+format = "[ $version]($style) "
+style = "bold halo"
+
+[rust]
+format = "[ $version]($style) "
+style = "bold halo"
+
+[golang]
+format = "[ $version]($style) "
+style = "bold halo"
+
+[java]
+format = "[ $version]($style) "
+style = "bold halo"
+
+[lua]
+format = "[ $version]($style) "
+style = "bold halo"
+
+[kubernetes]
+format = "[󱃾 $context]($style) "
+style = "bold halo"
+disabled = false
