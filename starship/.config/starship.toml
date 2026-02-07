@@ -177,12 +177,12 @@ capsule = "#b7f3e8"
 disabled = false
 
 [character]
-success_symbol = "[❯](bold glow) "
-error_symbol = "[❯](bold err) "
-vimcmd_symbol = "[❮](bold halo) "
-vimcmd_replace_one_symbol = "[❮](bold err) "
-vimcmd_replace_symbol = "[❮](bold err) "
-vimcmd_visual_symbol = "[❮](bold glow) "
+success_symbol = "[•](bold glow)[❯](bold glow) "
+error_symbol = "[•](bold glow)[❯](bold err) "
+vimcmd_symbol = "[•](bold glow)[❮](bold halo) "
+vimcmd_replace_one_symbol = "[•](bold glow)[❮](bold err) "
+vimcmd_replace_symbol = "[•](bold glow)[❮](bold err) "
+vimcmd_visual_symbol = "[•](bold glow)[❮](bold glow) "
 
 [status]
 disabled = false
@@ -207,7 +207,7 @@ style = "bold tooling"
 
 [cmd_duration]
 min_time = 800
-format = " [󱎫 $duration]($style)"
+format = "[•](dim)[󱎫 $duration]($style)[•](dim)"
 style = "bold time"
 show_milliseconds = false
 disabled = false
