@@ -4,7 +4,7 @@ scan_timeout = 30
 
 # Palette switcher: change this one line to swap color themes.
 # Available: tokyo_night, catppuccin_mocha, gruvbox_dark, nord, kanagawa, rose_pine, osaka_jade
-palette = "osaka_jade"
+palette = "tokyo_night"
 
 # bash doesn't support right prompt.
 right_format = ""
@@ -207,7 +207,7 @@ style = "bold tooling"
 
 [cmd_duration]
 min_time = 800
-format = "[󱎫 $duration]($style) "
+format = " [󱎫 $duration]($style)"
 style = "bold time"
 show_milliseconds = false
 disabled = false
