@@ -2,104 +2,523 @@ add_newline = false
 command_timeout = 700
 scan_timeout = 30
 
-palette = "ghost_glow"
+# Palette switcher: change this one line to swap color themes.
+# Available: tokyo_night, catppuccin_mocha, gruvbox_dark, nord, kanagawa, rose_pine, osaka_jade
+palette = "osaka_jade"
 
-# bash doesn't support right prompt; draw the top-right corner in format instead
+# bash doesn't support right prompt.
 right_format = ""
 
-# Left prompt: include top-right corner on the first line for bash
 format = """
-[╭](bold glow)$os$fill[╮](bold glow)
-[│](bold glow) $directory$git_branch$git_status$git_metrics$nodejs$python$rust$golang$java$lua$kubernetes$time
-[╰](bold glow)$character
+[╭─](bold glow) $os$username$hostname$shell
+[│ ](bold glow) $directory[•](dim) $git_branch$git_commit$git_state$git_status$git_metrics$aws$gcloud$kubernetes$nodejs$python$rust$golang$java$lua$c$cmake$dotnet$elixir$elm$erlang$haskell$julia$nim$ocaml$perl$php$purescript$raku$rlang$ruby$scala$swift$dart$terraform$helm$docker_context$package$time$line_break[╰─](bold glow)$status$jobs$cmd_duration$character
 """
 
-[palettes.ghost_glow]
-glow = "#0db9d7"
-halo = "#7aa2f7"
-dim  = "#787c99"
-err  = "#f7768e"
+# Compact variant for narrow terminals (toggle by replacing the format above):
+# format = """
+# [╭](bold glow) $os$directory$git_branch$git_status$time$line_break[╰](bold glow) $status$character
+# """
 
-[fill]
-symbol = "─"
-style  = "bold glow"
+[palettes.tokyo_night]
+glow = "#7aa2f7"
+halo = "#bb9af7"
+dim = "#565f89"
+err = "#f7768e"
+ok = "#9ece6a"
+warn = "#e0af68"
+git_clean = "#73daca"
+git_dirty = "#f7768e"
+cloud = "#bb9af7"
+sys = "#bb9af7"
+dir = "#7dcfff"
+git = "#73daca"
+git_meta = "#c0caf5"
+lang_web = "#7dcfff"
+lang_sys = "#9ece6a"
+lang_func = "#bb9af7"
+lang_data = "#e0af68"
+tooling = "#ff9e64"
+time = "#c0caf5"
+capsule = "#c0caf5"
+
+[palettes.catppuccin_mocha]
+glow = "#cba6f7"
+halo = "#f5c2e7"
+dim = "#6c7086"
+err = "#f38ba8"
+ok = "#a6e3a1"
+warn = "#f9e2af"
+git_clean = "#94e2d5"
+git_dirty = "#f38ba8"
+cloud = "#89b4fa"
+sys = "#f5c2e7"
+dir = "#fab387"
+git = "#a6e3a1"
+git_meta = "#cdd6f4"
+lang_web = "#89b4fa"
+lang_sys = "#a6e3a1"
+lang_func = "#cba6f7"
+lang_data = "#f9e2af"
+tooling = "#74c7ec"
+time = "#f5e0dc"
+capsule = "#f5c2e7"
+
+[palettes.gruvbox_dark]
+glow = "#fe8019"
+halo = "#d3869b"
+dim = "#928374"
+err = "#fb4934"
+ok = "#b8bb26"
+warn = "#fabd2f"
+git_clean = "#b8bb26"
+git_dirty = "#fb4934"
+cloud = "#d3869b"
+sys = "#fabd2f"
+dir = "#fe8019"
+git = "#b8bb26"
+git_meta = "#ebdbb2"
+lang_web = "#83a598"
+lang_sys = "#b8bb26"
+lang_func = "#d3869b"
+lang_data = "#fabd2f"
+tooling = "#83a598"
+time = "#d5c4a1"
+capsule = "#d3869b"
+
+[palettes.nord]
+glow = "#81a1c1"
+halo = "#88c0d0"
+dim = "#616e88"
+err = "#bf616a"
+ok = "#a3be8c"
+warn = "#ebcb8b"
+git_clean = "#a3be8c"
+git_dirty = "#bf616a"
+cloud = "#b48ead"
+sys = "#5e81ac"
+dir = "#8fbcbb"
+git = "#a3be8c"
+git_meta = "#e5e9f0"
+lang_web = "#8fbcbb"
+lang_sys = "#a3be8c"
+lang_func = "#b48ead"
+lang_data = "#ebcb8b"
+tooling = "#81a1c1"
+time = "#e5e9f0"
+capsule = "#d8dee9"
+
+[palettes.kanagawa]
+glow = "#7e9cd8"
+halo = "#957fb8"
+dim = "#727169"
+err = "#e46876"
+ok = "#98bb6c"
+warn = "#e6c384"
+git_clean = "#98bb6c"
+git_dirty = "#e46876"
+cloud = "#957fb8"
+sys = "#c8c093"
+dir = "#c0a36e"
+git = "#76946a"
+git_meta = "#dcd7ba"
+lang_web = "#7fb4ca"
+lang_sys = "#76946a"
+lang_func = "#957fb8"
+lang_data = "#e6c384"
+tooling = "#b6927b"
+time = "#dcd7ba"
+capsule = "#957fb8"
+
+[palettes.rose_pine]
+glow = "#c4a7e7"
+halo = "#ebbcba"
+dim = "#6e6a86"
+err = "#eb6f92"
+ok = "#9ccfd8"
+warn = "#f6c177"
+git_clean = "#9ccfd8"
+git_dirty = "#eb6f92"
+cloud = "#c4a7e7"
+sys = "#c4a7e7"
+dir = "#ebbcba"
+git = "#31748f"
+git_meta = "#e0def4"
+lang_web = "#9ccfd8"
+lang_sys = "#f6c177"
+lang_func = "#c4a7e7"
+lang_data = "#ebbcba"
+tooling = "#eb6f92"
+time = "#908caa"
+capsule = "#e0def4"
+
+[palettes.osaka_jade]
+glow = "#79e6c7"
+halo = "#5ac8b1"
+dim = "#4f6a68"
+err = "#ff6f7a"
+ok = "#7de3a5"
+warn = "#f7c06b"
+git_clean = "#7de3a5"
+git_dirty = "#ff6f7a"
+cloud = "#7fd4d1"
+sys = "#5ac8b1"
+dir = "#79e6c7"
+git = "#7de3a5"
+git_meta = "#b7f3e8"
+lang_web = "#64d9c9"
+lang_sys = "#7de3a5"
+lang_func = "#8be9d5"
+lang_data = "#f7c06b"
+tooling = "#48bfa9"
+time = "#a8d8d0"
+capsule = "#b7f3e8"
+
+[line_break]
+disabled = false
 
 [character]
-success_symbol = "[─❯](bold glow) "
-error_symbol   = "[─❯](bold err) "
+success_symbol = "[❯](bold glow) "
+error_symbol = "[❯](bold err) "
+vimcmd_symbol = "[❮](bold halo) "
+vimcmd_replace_one_symbol = "[❮](bold err) "
+vimcmd_replace_symbol = "[❮](bold err) "
+vimcmd_visual_symbol = "[❮](bold glow) "
+
+[status]
+disabled = false
+format = "[⟦](bold capsule)[$symbol$status](bold err)[⟧](bold capsule)"
+symbol = "✖ "
+not_executable_symbol = " "
+not_found_symbol = " "
+sigint_symbol = "󰀥 "
+signal_symbol = "⚡ "
+style = "bold err"
+map_symbol = false
+recognize_signal_code = true
+pipestatus = false
+
+[jobs]
+threshold = 1
+symbol_threshold = 1
+number_threshold = 1
+format = "[$symbol$number]($style) "
+symbol = " "
+style = "bold tooling"
+
+[cmd_duration]
+min_time = 800
+format = "[󱎫 $duration]($style) "
+style = "bold time"
+show_milliseconds = false
+disabled = false
+show_notifications = false
 
 [os]
 disabled = false
-style = "bold halo"
-format = "[$symbol]($style) "
+style = "bold sys"
+format = "[$symbol]($style)"
 
 [os.symbols]
+AIX = " "
+Alpaquita = " "
+Alpine = " "
+ALTLinux = " "
+AlmaLinux = " "
+Amazon = " "
+Android = " "
+AOSC = " "
 Arch = " "
+Artix = " "
+Bluefin = " "
+CachyOS = " "
+CentOS = " "
+Debian = " "
+DragonFly = " "
+Elementary = " "
+Emscripten = " "
+EndeavourOS = " "
+Fedora = " "
+FreeBSD = " "
+Garuda = "󰛓 "
+Gentoo = " "
+HardenedBSD = "󰞌 "
+Illumos = "󰈸 "
+Ios = "󰀷 "
+InstantOS = " "
+Kali = " "
+Linux = " "
+Mabox = " "
 Macos = " "
+Manjaro = " "
+Mariner = " "
+MidnightBSD = " "
+Mint = " "
+NetBSD = " "
+NixOS = " "
+Nobara = " "
+OpenBSD = "󰈺 "
+OpenCloudOS = " "
+openEuler = " "
+openSUSE = " "
+OracleLinux = "󰌷 "
+PikaOS = " "
+Pop = " "
+Raspbian = " "
+Redhat = " "
+RedHatEnterprise = " "
+RockyLinux = " "
+Redox = "󰀘 "
+Solus = "󰠳 "
+SUSE = " "
 Ubuntu = " "
-Linux = "󰣇 "
+Ultramarine = " "
+Unknown = " "
+Uos = " "
+Void = " "
+Windows = "󰍲 "
+Zorin = " "
+
+[username]
+format = "[$user]($style) "
+style_root = "bold err"
+style_user = "bold sys"
+show_always = false
+disabled = false
+
+[hostname]
+ssh_only = true
+ssh_symbol = "󰣀 "
+trim_at = "."
+format = "[$ssh_symbol$hostname]($style) "
+style = "bold sys"
+disabled = false
+
+[shell]
+format = "[ $indicator]($style) "
+bash_indicator = "bash"
+fish_indicator = "fish"
+zsh_indicator = "zsh"
+powershell_indicator = "pwsh"
+ion_indicator = "ion"
+elvish_indicator = "esh"
+tcsh_indicator = "tsh"
+nu_indicator = "nu"
+xonsh_indicator = "xsh"
+cmd_indicator = "cmd"
+unknown_indicator = "shell"
+style = "bold tooling"
+disabled = false
 
 [directory]
 format = "[ $path]($style) "
-style = "bold glow"
+style = "bold dir"
 truncation_length = 3
 truncation_symbol = "…/"
 home_symbol = "~"
-
-[time]
-format = "[ $time]($style) "
-time_format = "%H:%M"
-style = "dim"
+read_only = " "
+read_only_style = "bold warn"
 
 [git_branch]
-symbol = " "
+symbol = " "
 format = "[$symbol$branch]($style) "
-style = "bold glow"
+style = "bold git"
 
-[git_status]
-format = "[$all_status$ahead_behind]($style) "
-style = "dim"
-modified  = "󰛿 "
-staged    = "󰐗 "
-untracked = "󰋗 "
-renamed   = "󰑕 "
-deleted   = "󰍶 "
-stashed   = "󰏗 "
-ahead     = "󰁝 "
-behind    = "󰁅 "
-diverged  = "󰁝󰁅 "
+[git_commit]
+commit_hash_length = 7
+format = '([\[$hash$tag\]]($style) )'
+style = "bold git_meta"
+only_detached = true
+tag_symbol = "  "
+tag_disabled = false
 
 [git_metrics]
+added_style = "bold git_clean"
+deleted_style = "bold git_dirty"
+only_nonzero_diffs = true
+format = "([+$added]($added_style)[-$deleted]($deleted_style) )"
 disabled = false
-format = "([󰐗 $added]($added_style))([󰍶 $deleted]($deleted_style)) "
-added_style = "dim"
-deleted_style = "dim"
+ignore_submodules = false
+
+[git_state]
+rebase = "REBASING"
+merge = "MERGING"
+revert = "REVERTING"
+cherry_pick = "CHERRY-PICKING"
+bisect = "BISECTING"
+am = "APPLY-MAILBOX"
+am_or_rebase = "AM/REBASE"
+style = "bold err"
+format = '([\[$state( $progress_current/$progress_total)\]]($style) )'
+disabled = false
+
+[git_status]
+# Legend: + staged, ! modified, ? untracked, ✘ deleted, » renamed,
+# = conflicted, $ stashed, ⇡ ahead, ⇣ behind, ⇕ diverged
+format = '([\[$all_status$ahead_behind\]]($style) )'
+style = "bold git"
+stashed = '\$'
+ahead = "⇡"
+behind = "⇣"
+up_to_date = ""
+diverged = "⇕"
+conflicted = "="
+deleted = "✘"
+renamed = "»"
+modified = "!"
+staged = "+"
+untracked = "?"
+typechanged = "~"
+ignore_submodules = false
+disabled = false
+use_git_executable = false
+
+[aws]
+format = '[󰸏 $profile( \($region\))]($style) '
+style = "bold cloud"
+disabled = false
+expiration_symbol = "󰧠"
+force_display = false
+
+[gcloud]
+format = '[󱇶 $project($account)( \($region\))]($style) '
+symbol = ""
+style = "bold cloud"
+disabled = false
+detect_env_vars = []
+
+[gcloud.project_aliases]
+
+[gcloud.region_aliases]
+
+[kubernetes]
+format = '[󱃾 $context( \($namespace\))]($style) '
+style = "bold cloud"
+disabled = false
+detect_extensions = []
+detect_files = []
+detect_folders = []
+detect_env_vars = ["KUBECONFIG", "KUBERNETES_SERVICE_HOST"]
 
 [nodejs]
 format = "[ $version]($style) "
-style = "bold halo"
+style = "bold lang_web"
 
 [python]
 format = "[ $version]($style) "
-style = "bold halo"
+style = "bold lang_data"
 
 [rust]
 format = "[ $version]($style) "
-style = "bold halo"
+style = "bold lang_sys"
 
 [golang]
 format = "[ $version]($style) "
-style = "bold halo"
+style = "bold lang_sys"
 
 [java]
 format = "[ $version]($style) "
-style = "bold halo"
+style = "bold lang_data"
 
 [lua]
 format = "[ $version]($style) "
-style = "bold halo"
+style = "bold lang_func"
 
-[kubernetes]
-format = "[󱃾 $context]($style) "
-style = "bold halo"
+[c]
+format = "[ $version]($style) "
+style = "bold lang_sys"
+
+[cmake]
+format = "[△ $version]($style) "
+style = "bold lang_sys"
+
+[dotnet]
+format = "[󰪮 $version( 🎯 $tfm)]($style) "
+style = "bold lang_sys"
+
+[elixir]
+format = '[ $version( OTP $otp_version)]($style) '
+style = "bold lang_func"
+
+[elm]
+format = "[ $version]($style) "
+style = "bold lang_func"
+
+[erlang]
+format = "[ $version]($style) "
+style = "bold lang_func"
+
+[haskell]
+format = "[ $version]($style) "
+style = "bold lang_func"
+
+[julia]
+format = "[ $version]($style) "
+style = "bold lang_func"
+
+[nim]
+format = "[󰆥 $version]($style) "
+style = "bold lang_func"
+
+[ocaml]
+format = '[ $version( \($switch_indicator$switch_name\))]($style) '
+style = "bold lang_func"
+
+[perl]
+format = "[ $version]($style) "
+style = "bold lang_func"
+
+[php]
+format = "[ $version]($style) "
+style = "bold lang_web"
+
+[purescript]
+format = "[ $version]($style) "
+style = "bold lang_func"
+
+[raku]
+format = "[󱖉 $version-$vm_version]($style) "
+style = "bold lang_func"
+
+[rlang]
+format = "[󰟔 $version]($style) "
+style = "bold lang_data"
+
+[ruby]
+format = "[ $version]($style) "
+style = "bold lang_func"
+
+[scala]
+format = "[ $version]($style) "
+style = "bold lang_func"
+
+[swift]
+format = "[ $version]($style) "
+style = "bold lang_sys"
+
+[dart]
+format = "[ $version]($style) "
+style = "bold lang_web"
+
+[terraform]
+format = "[󱁢 $workspace]($style) "
+style = "bold tooling"
+
+[helm]
+format = "[⎈ $version]($style) "
+style = "bold tooling"
+
+[docker_context]
+format = "[ $context]($style) "
+style = "bold tooling"
+only_with_files = true
+
+[package]
+format = "[󰏗 $version]($style) "
+style = "bold tooling"
+version_format = "v${raw}"
+
+[time]
 disabled = false
+format = "[ $time]($style) "
+time_format = "%H:%M"
+style = "bold time"
