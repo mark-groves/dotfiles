@@ -11,7 +11,7 @@ right_format = ""
 
 format = """
 [╭─](bold glow) $os$username$hostname$shell
-[│ ](bold glow) $directory[•](dim) $git_branch$git_commit$git_state$git_status$git_metrics$aws$gcloud$kubernetes$nodejs$python$rust$golang$java$lua$c$cmake$dotnet$elixir$elm$erlang$haskell$julia$nim$ocaml$perl$php$purescript$raku$rlang$ruby$scala$swift$dart$terraform$helm$docker_context$package$time$line_break[╰─](bold glow)$status$jobs$cmd_duration$character
+[│ ](bold glow) $directory$git_branch$git_commit$git_state$git_status$git_metrics$aws$gcloud$kubernetes$nodejs$python$rust$golang$java$lua$c$cmake$dotnet$elixir$elm$erlang$haskell$julia$nim$ocaml$perl$php$purescript$raku$rlang$ruby$scala$swift$dart$terraform$helm$docker_context$package$time$line_break[╰─](bold glow)$status$jobs$cmd_duration$character
 """
 
 # Compact variant for narrow terminals (toggle by replacing the format above):
@@ -320,7 +320,7 @@ read_only_style = "bold warn"
 
 [git_branch]
 symbol = " "
-format = "[$symbol$branch]($style) "
+format = "[•](dim) [$symbol$branch]($style) "
 style = "bold git"
 
 [git_commit]
@@ -518,7 +518,7 @@ style = "bold tooling"
 version_format = "v${raw}"
 
 [time]
-disabled = false
-format = "[ $time]($style) "
+disabled = true
+format = "[•](dim) [ $time]($style) "
 time_format = "%H:%M"
 style = "bold time"
