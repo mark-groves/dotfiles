@@ -1,4 +1,4 @@
-add_newline = false
+add_newline = true
 command_timeout = 700
 scan_timeout = 30
 
