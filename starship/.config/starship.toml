@@ -207,7 +207,7 @@ style = "bold tooling"
 
 [cmd_duration]
 min_time = 800
-format = "[•](dim)[󱎫 $duration]($style)[•](dim)"
+format = "[•](dim)[󱎫 $duration]($style)"
 style = "bold time"
 show_milliseconds = false
 disabled = false
