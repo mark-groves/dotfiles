@@ -11,6 +11,10 @@
 	rebase = true 			 # Rebase (instead of merge) on pull
 [push]
 	autoSetupRemote = true   # Automatically set upstream branch on push
+	followTags = true        # Push annotated tags that point to pushed commits
+[fetch]
+	prune = true             # Remove stale remote-tracking branches on fetch
+	pruneTags = true         # Prune deleted remote tags on fetch
 [diff]
 	algorithm = histogram    # Clearer diffs on moved/edited lines
 	colorMoved = plain       # Highlight moved blocks in diffs
@@ -32,6 +36,6 @@
 	email = mark@grovr.au
 	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID+7IIgzSsQxb6Vys3v9d724lhaYnmnYXNQxsu5yHoDI
 [gpg]
-  format = ssh
+	format = ssh
 [gpg "ssh"]
-  program = "/opt/1Password/op-ssh-sign"
+	program = "/opt/1Password/op-ssh-sign"
