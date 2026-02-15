@@ -30,17 +30,17 @@ stow -t "$HOME" --restow hosts/<hostname>/<package>
 
 Stow all base packages:
 ```
-./scripts/stow-base.sh
+./scripts/stow.sh base
 ```
 
 Stow host-specific packages for this machine:
 ```
-./scripts/stow-host.sh
+./scripts/stow.sh host
 ```
 
 Stow a specific host's packages:
 ```
-./scripts/stow-host.sh <hostname>
+./scripts/stow.sh host <hostname>
 ```
 
 ## Notes

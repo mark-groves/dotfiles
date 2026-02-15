@@ -32,13 +32,13 @@ dotfiles/
 ### Stow Operations
 ```bash
 # Stow all base packages
-./scripts/stow-base.sh
+./scripts/stow.sh base
 
 # Stow host-specific packages for current machine
-./scripts/stow-host.sh
+./scripts/stow.sh host
 
 # Stow specific host's packages
-./scripts/stow-host.sh <hostname>
+./scripts/stow.sh host <hostname>
 
 # Manual stow of single package
 stow -t "$HOME" <package>
@@ -207,7 +207,7 @@ refactor: split hyprland configs into modules
    ```bash
    mkdir -p hosts/<hostname>/<package>/.config/<app>
    # Add host-specific overrides
-   ./scripts/stow-host.sh
+   ./scripts/stow.sh host
    ```
 
 ## Best Practices
