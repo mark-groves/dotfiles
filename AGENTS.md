@@ -1,239 +1,161 @@
 # Agent Guidelines for Dotfiles Repository
 
-This document provides coding agents with essential information about this dotfiles repository structure, workflows, and conventions.
+Stow-first dotfiles repo for Linux. GNU Stow creates symlinks from this repo into `$HOME`.
 
-## Repository Overview
-
-This is a stow-first dotfiles repository for managing Linux system configuration files with per-host overrides. The repository uses GNU Stow to create symlinks from the repo to `$HOME`.
-
-**Repository**: `git@github.com:mark-groves/dotfiles.git`
+**Repo**: `git@github.com:mark-groves/dotfiles.git`
 
 ## Architecture
 
-### Directory Structure
 ```
 dotfiles/
-├── hosts/                    # Host-specific overrides
-│   └── <hostname>/          # Per-machine packages
-│       └── <package>/       # Mirrors $HOME structure
-├── scripts/                 # Management scripts
-├── <package>/               # Base stow packages (mirror $HOME)
-└── README.md
+├── <package>/            # Base stow packages (mirror $HOME structure)
+├── hosts/<hostname>/     # Per-host overrides, same mirror structure
+│   └── <package>/
+├── scripts/              # Management scripts (not stowed)
+└── .stow-global-ignore   # Excludes .git, README.md, scripts/ from stow
 ```
 
-### Key Concepts
-- **Base packages**: Top-level directories (excluding `hosts/` and `scripts/`) that mirror `$HOME` structure
-- **Host packages**: Machine-specific overrides in `hosts/<hostname>/<package>/`
-- **Stow workflow**: Base packages are stowed first, then host-specific packages overlay them
-- **Idempotency**: All stow operations use `--restow` for safe, repeatable execution
+- **Base packages**: Top-level dirs (excluding `hosts/`, `scripts/`, `.git*`) that mirror `$HOME`.
+- **Host packages**: Machine-specific overrides in `hosts/<hostname>/<package>/`.
+- **Stow order**: Base first, then host-specific overlays. All operations use `--restow`.
 
 ## Commands
 
 ### Stow Operations
 ```bash
-# Stow all base packages
-./scripts/stow.sh base
-
-# Stow host-specific packages for current machine
-./scripts/stow.sh host
-
-# Stow specific host's packages
-./scripts/stow.sh host <hostname>
-
-# Manual stow of single package
-stow -t "$HOME" <package>
-
-# Manual restow (idempotent refresh)
-stow -t "$HOME" --restow <package>
-
-# Unstow a package
-stow -t "$HOME" -D <package>
+./scripts/stow.sh base                  # Stow all base packages
+./scripts/stow.sh host                  # Stow host packages (current hostname)
+./scripts/stow.sh host <hostname>       # Stow specific host's packages
+./scripts/stow.sh base -n               # Dry run (also works with host)
+stow -n -v -t "$HOME" <package>         # Manual dry run for a single package
+stow -t "$HOME" --restow <package>      # Manual restow (idempotent)
+stow -t "$HOME" -D <package>            # Unstow a package
 ```
 
-### Git Operations
+### Build / Lint / Test
+
+There is no formal build system, test suite, or CI linting configured. No Makefile, justfile, or taskfile exists.
+
+**Validating changes:**
 ```bash
-# Check repository status
-git status
-
-# View recent commits
-git log --oneline -10
-
-# Check what would be stowed
+# Dry-run stow to check for conflicts before applying
 stow -n -v -t "$HOME" <package>
-```
 
-### Verification
-```bash
-# Verify stow is installed
+# Lint shell scripts manually (shellcheck is not configured but recommended)
+shellcheck scripts/stow.sh
+
+# Verify stow is available
 stow --version
-
-# List available base packages
-ls -d */ | grep -v hosts | grep -v scripts
-
-# List host-specific packages
-ls -la hosts/<hostname>/
-
-# Find config files in a package
-find hosts/<hostname>/<package> -type f
 ```
 
-## Code Style and Conventions
+When adding new shell scripts, validate them with `shellcheck` before committing. There is no pre-commit hook enforcement.
+
+## Code Style
 
 ### Shell Scripts (Bash)
 
-**Shebang and Options**
+**Header** -- every script must start with:
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
 ```
-- Always use `#!/usr/bin/env bash` (not `/bin/bash`)
-- Set strict mode: `-e` (exit on error), `-u` (error on unset vars), `-o pipefail` (catch pipe failures)
 
-**Error Handling**
+**Functions and structure:**
+- Subcommand dispatch via `main()` + `case` statement
+- `usage()` function providing `--help` output
+- Dependency checks early: `command -v <cmd> >/dev/null 2>&1 || { echo "..."; exit 1; }`
+
+**Variables:**
+- Lowercase with underscores: `repo_root`, `host_dir`, `pkg_name`, `dry_run`
+- Always quote: `"$variable"`, `"${array[@]}"`
+- Declare arrays with `local -a`: `local -a packages=()`, then `packages+=("$item")`
+- Use namerefs (`local -n`) for passing arrays to functions
+
+**Control flow:**
+- `[[ ]]` for conditionals (never `[ ]`)
+- `while IFS= read -r -d '' dir` with `find ... -print0` for null-safe filename handling
+- `mapfile -t` to capture command output into arrays
+- `case "$1" in -n|--dry-run)` for option parsing
+
+**Path resolution:**
 ```bash
-# Check for required commands before proceeding
-command -v stow >/dev/null 2>&1 || {
-  echo "stow is required but not installed. Please install it and retry."
-  exit 1
-}
-
-# Validate directories exist
-if [[ ! -d "$host_dir" ]]; then
-  echo "Host package not found: $host_dir"
-  exit 1
-fi
-```
-
-**Path Resolution**
-```bash
-# Always resolve repo root for script portability
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$repo_root"
 ```
 
-**Variables and Quoting**
-- Use lowercase for local variables: `packages`, `host_dir`, `repo_root`
-- Always quote variables: `"$variable"`, `"${array[@]}"`
-- Use arrays for lists: `packages=()` then `packages+=("$item")`
-
-**Control Flow**
-- Use `[[ ]]` for conditionals (not `[ ]`)
-- Prefer `while IFS= read -r` for reading input
-- Use `-print0` with `find` and `-d ''` with `read` for safe filename handling
+**Error handling:**
+- Validate directories exist before operating: `[[ ! -d "$dir" ]]`
+- Send errors to stderr: `echo "Error: ..." >&2`
+- Track failures in arrays and report at end rather than exiting on first failure
+- Exit non-zero only when all operations fail; warn on partial failures
 
 ### Configuration Files
 
-**Hyprland Configs**
-- Use descriptive comments explaining what each section does
-- Include references to official documentation where applicable
-- Group related settings together (workspaces, monitors, input, bindings)
-- Use `bindd` for application bindings with descriptive labels
-- Format: clear spacing between logical sections
+**TOML (e.g., starship.toml):**
+- Group related settings under `[section]` headers
+- Use inline comments sparingly; prefer section-level comments
+- Define color palettes as named tables (`[palettes.<name>]`) with semantic token names
 
-**File Organization**
-- Split large configs into modular files (e.g., `monitors.conf`, `bindings.conf`, `workspaces.conf`)
-- Keep host-specific settings in `hosts/<hostname>/` packages only
-- Base packages should remain portable across machines
+**Hyprland configs:**
+- Split into modular files: `monitors.conf`, `bindings.conf`, `workspaces.conf`, etc.
+- Use `bindd` (not `bind`) for application bindings -- includes descriptive labels
+- Add Hyprland wiki URL comments for non-obvious settings
+- Clear blank lines between logical sections
+- Host-specific hardware settings (monitors, input devices) go in `hosts/<hostname>/` only
 
 ### Git Commit Messages
 
-Follow Conventional Commits (https://www.conventionalcommits.org/):
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 <type>: <summary>
 <type>(<scope>): <summary>
 ```
 
-**Recommended Types**
-- `feat`: new user-visible change
-- `fix`: bug fix
-- `docs`: documentation-only change
-- `refactor`: code change without behavior change
-- `chore`: tooling, config, or meta updates
-- `test`: add or update tests
-- `ci`: CI or automation changes
+**Types**: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`, `ci`
+**Avoid**: `init`, `cleanup`, `misc`, or vague summaries like "update" or "changes"
 
-**Avoid**
-- `init`, `cleanup`, `misc`, or ambiguous custom types
-- Vague summaries like "update" or "changes"
+**Rules:**
+- Lowercase type and summary
+- Summary <= 72 characters
+- Scope is optional; use for directory/area (e.g., `scripts`, `hypr`)
+- Describe intent/outcome, not files touched
+- Wrap body at ~72 chars if present
 
-**Examples**
+**Examples:**
 ```
 feat: enable extra application keybindings
 fix(scripts): exclude hosts directory from base package discovery
-docs: clarify base package layout exclusions
 refactor: split hyprland configs into modules
 ```
 
-**Guidelines**
-- Use lowercase for type and summary
-- Keep summary ≤ 72 characters
-- Use scope sparingly for directory or area (e.g., `scripts`, `hypr`)
-- Describe intent/outcome, not just files touched
-- Wrap body at ~72 chars if needed, include rationale
-
 ## File Management
 
-### Files to Include
-- Source-of-truth configuration files
-- Shell scripts for automation
-- Documentation (README.md files)
+**Include**: Source-of-truth config files, shell scripts, documentation.
+**Exclude** (via `.stow-global-ignore`): `.git`, `README.md`, `scripts/`.
+**Never commit**: Generated files, caches, secrets (`.env`, credentials).
 
-### Files to Exclude (via `.stow-global-ignore`)
+### Creating a New Package
+```bash
+mkdir -p <package>/.config/<app>         # Base package
+stow -n -v -t "$HOME" <package>          # Dry run
+stow -t "$HOME" <package>                # Apply
+
+# Host override (if needed)
+mkdir -p hosts/<hostname>/<package>/.config/<app>
+./scripts/stow.sh host
 ```
-^\.git(/|$)
-^README\.md$
-^scripts(/|$)
-```
-- Git metadata
-- README files (documentation, not config)
-- Scripts directory (not part of $HOME)
-- Generated artifacts or cache files
 
-### Package Creation Workflow
+## Rules for Agents
 
-1. **Create base package**:
-   ```bash
-   mkdir -p <package>/.config/<app>
-   # Add config files mirroring $HOME structure
-   ```
+1. **Dry-run before stowing**: Always `stow -n -v` first
+2. **Mirror `$HOME` exactly**: Package directory structure must match home layout
+3. **Base = portable**: No machine-specific settings in base packages
+4. **Host = overrides only**: Hardware-specific config goes in `hosts/<hostname>/`
+5. **Idempotent scripts**: Safe to run multiple times (`--restow`, `set -euo pipefail`)
+6. **No `cd` without error handling**: Resolve paths with `$BASH_SOURCE` or subshells
+7. **Check for conflicts**: Verify no existing symlinks clash before creating packages
+8. **Preserve patterns**: Match the style of `scripts/stow.sh` for any new scripts
 
-2. **Test stowing**:
-   ```bash
-   stow -n -v -t "$HOME" <package>  # Dry run
-   stow -t "$HOME" <package>         # Actual stow
-   ```
+## References
 
-3. **Create host override** (if needed):
-   ```bash
-   mkdir -p hosts/<hostname>/<package>/.config/<app>
-   # Add host-specific overrides
-   ./scripts/stow.sh host
-   ```
-
-## Best Practices
-
-### For Agents Working in This Repository
-
-1. **Always verify before stowing**: Use `stow -n -v` for dry runs
-2. **Maintain the mirror structure**: Packages must exactly mirror `$HOME`
-3. **Keep base packages portable**: Host-specific settings go in `hosts/<hostname>/`
-4. **Document non-obvious changes**: Add comments in configs and use Conventional Commits with the recommended types above
-5. **Test idempotency**: Scripts should be safe to run multiple times
-6. **Preserve existing patterns**: Follow established conventions in scripts and configs
-7. **Check for conflicts**: Before creating new packages, verify no symlink conflicts
-8. **Validate paths**: Always use absolute paths or properly resolve relative paths
-
-### Common Pitfalls to Avoid
-
-- Don't add generated files or cache directories
-- Don't break the `$HOME` mirror structure in packages
-- Don't hardcode paths that should be host-specific
-- Don't modify base packages for machine-specific needs (use host overrides)
-- Don't skip the `set -euo pipefail` in bash scripts
-- Don't use `cd` without proper error handling
-
-## Reference
-
-- **Stow Documentation**: https://www.gnu.org/software/stow/
-- **Hyprland Wiki**: https://wiki.hyprland.org/
-- **Repository README**: See `README.md` for user-facing documentation
+- [GNU Stow](https://www.gnu.org/software/stow/)
+- [Hyprland Wiki](https://wiki.hyprland.org/)
