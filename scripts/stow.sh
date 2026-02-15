@@ -43,7 +43,6 @@ discover_base_packages() {
     packages+=("$pkg")
   done < <(find . -maxdepth 1 -mindepth 1 -type d \
     -not -path './.git*' \
-    -not -path './.github' \
     -not -path './scripts' \
     -not -path './hosts' \
     -print0)
@@ -101,16 +100,19 @@ cmd_base() {
   echo "Stowing base packages: ${packages[*]}"
   
   local -a failed=()
+  local -a stow_args=()
   for pkg in "${packages[@]}"; do
-    local -a stow_args=(-t "$HOME" --restow "$pkg")
+    stow_args=(-t "$HOME" --restow)
     [[ "$dry_run" == true ]] && stow_args+=(-n)
+    stow_args+=("$pkg")
     
+    echo "  $pkg"
     if ! stow "${stow_args[@]}"; then
       failed+=("$pkg")
     fi
   done
   
-  handle_results packages[@] failed[@]
+  handle_results packages failed
 }
 
 cmd_host() {
@@ -152,39 +154,41 @@ cmd_host() {
   echo "Stowing host packages for '$hostname': ${packages[*]}"
   
   local -a failed=()
+  local -a stow_args=()
+  local pkg_dir pkg_name
   for pkg in "${packages[@]}"; do
-    local -a stow_args=(-t "$HOME" --restow)
+    stow_args=(-t "$HOME" --restow)
     
     # For host packages, use -d to specify the package directory
     # since package names can't contain slashes
-    local pkg_dir="${pkg%/*}"  # e.g., hosts/nexus-unbound
-    local pkg_name="${pkg##*/}"  # e.g., hypr
+    pkg_dir="${pkg%/*}"   # e.g., hosts/nexus-unbound
+    pkg_name="${pkg##*/}" # e.g., hypr
+    [[ "$dry_run" == true ]] && stow_args+=(-n)
     stow_args+=(-d "$pkg_dir" "$pkg_name")
     
-    [[ "$dry_run" == true ]] && stow_args+=(-n)
-    
+    echo "  $pkg_name"
     if ! stow "${stow_args[@]}"; then
       failed+=("$pkg")
     fi
   done
   
-  handle_results packages[@] failed[@]
+  handle_results packages failed
 }
 
 handle_results() {
-  local packages_name="$1"
-  local failed_name="$2"
-  local -a packages=("${!packages_name}")
-  local -a failed=("${!failed_name}")
+  local -n _packages="$1"
+  local -n _failed="$2"
   
   # Exit non-zero only if ALL packages failed
-  if [[ ${#failed[@]} -eq ${#packages[@]} && ${#packages[@]} -gt 0 ]]; then
+  if [[ ${#_failed[@]} -eq ${#_packages[@]} && ${#_packages[@]} -gt 0 ]]; then
     echo "Error: all packages failed to stow"
     exit 1
   fi
   
-  if [[ ${#failed[@]} -gt 0 ]]; then
-    echo "Warning: failed to stow: ${failed[*]}"
+  if [[ ${#_failed[@]} -gt 0 ]]; then
+    echo "Warning: failed to stow: ${_failed[*]}"
+  else
+    echo "Done."
   fi
 }
 
