@@ -32,7 +32,7 @@ There is no build system, test suite, or CI linting. Validate with dry-runs and 
 - **Base packages**: Top-level dirs (`git/`, `starship/`, etc.) — portable, no machine-specific settings. Contents mirror `$HOME` (e.g., `git/.config/git/config` -> `~/.config/git/config`).
 - **Host overrides**: `hosts/<hostname>/<package>/` — hardware-specific config (monitors, input devices). Applied after base packages.
 - **Scripts**: `scripts/` — management tooling, not stowed.
-- **Stow ignore**: `.stow-global-ignore` excludes `.git`, `README.md`, and `scripts/` from stowing.
+- **Stow ignore**: `.stow-global-ignore` excludes `.git`, `README.md`, `CLAUDE.md`, `AGENTS.md`, and `scripts/` from stowing.
 
 ## Key Conventions
 
