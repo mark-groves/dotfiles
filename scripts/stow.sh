@@ -43,6 +43,7 @@ discover_base_packages() {
     packages+=("$pkg")
   done < <(find . -maxdepth 1 -mindepth 1 -type d \
     -not -path './.git*' \
+    -not -path './.claude' \
     -not -path './scripts' \
     -not -path './hosts' \
     -print0)
@@ -102,10 +103,10 @@ cmd_base() {
   local -a failed=()
   local -a stow_args=()
   for pkg in "${packages[@]}"; do
-    stow_args=(-t "$HOME" --restow)
+    stow_args=(-t "$HOME" --restow --no-folding)
     [[ "$dry_run" == true ]] && stow_args+=(-n)
     stow_args+=("$pkg")
-    
+
     echo "  $pkg"
     if ! stow "${stow_args[@]}"; then
       failed+=("$pkg")
@@ -157,8 +158,8 @@ cmd_host() {
   local -a stow_args=()
   local pkg_dir pkg_name
   for pkg in "${packages[@]}"; do
-    stow_args=(-t "$HOME" --restow)
-    
+    stow_args=(-t "$HOME" --restow --no-folding)
+
     # For host packages, use -d to specify the package directory
     # since package names can't contain slashes
     pkg_dir="${pkg%/*}"   # e.g., hosts/nexus-unbound
