@@ -4,27 +4,27 @@ Tmux configuration stow package. Stows to `~/.config/tmux/tmux.conf`.
 
 ## Prefix
 
-| Key          | Role               |
-|--------------|--------------------|
-| `Ctrl+Space` | Primary prefix     |
-| `Ctrl+b`     | Secondary prefix   |
+| Key          | Role             |
+| ------------ | ---------------- |
+| `Ctrl+Space` | Primary prefix   |
+| `Ctrl+b`     | Secondary prefix |
 
 ## Keybindings
 
 ### Panes
 
-| Key                       | Action                |
-|---------------------------|-----------------------|
-| `Prefix + h`              | Split horizontally    |
-| `Prefix + v`              | Split vertically      |
-| `Prefix + x`              | Kill pane             |
-| `Ctrl+Alt+←/→/↑/↓`         | Move between panes    |
-| `Ctrl+Alt+Shift+←/→/↑/↓`   | Resize pane (5 cells) |
+| Key                      | Action                |
+| ------------------------ | --------------------- |
+| `Prefix + h`             | Split horizontally    |
+| `Prefix + v`             | Split vertically      |
+| `Prefix + x`             | Kill pane             |
+| `Ctrl+Alt+←/→/↑/↓`       | Move between panes    |
+| `Ctrl+Alt+Shift+←/→/↑/↓` | Resize pane (5 cells) |
 
 ### Windows
 
 | Key               | Action                       |
-|-------------------|------------------------------|
+| ----------------- | ---------------------------- |
 | `Prefix + c`      | New window (at current path) |
 | `Prefix + k`      | Kill window                  |
 | `Prefix + r`      | Rename window                |
@@ -34,7 +34,7 @@ Tmux configuration stow package. Stows to `~/.config/tmux/tmux.conf`.
 ### Sessions
 
 | Key          | Action                        |
-|--------------|-------------------------------|
+| ------------ | ----------------------------- |
 | `Prefix + C` | New session (at current path) |
 | `Prefix + K` | Kill session                  |
 | `Prefix + R` | Rename session                |
@@ -45,14 +45,14 @@ Tmux configuration stow package. Stows to `~/.config/tmux/tmux.conf`.
 ### Copy mode (vi)
 
 | Key | Action                  |
-|-----|-------------------------|
+| --- | ----------------------- |
 | `v` | Begin selection         |
 | `y` | Copy selection and exit |
 
 ### Other
 
 | Key          | Action        |
-|--------------|---------------|
+| ------------ | ------------- |
 | `Prefix + q` | Reload config |
 
 ## Notable settings
