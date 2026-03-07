@@ -52,6 +52,53 @@ See:
 
 - `hosts/nexus-unbound/hypr/.config/hypr/workspaces.conf`
 
+## Custom keybindings
+
+Defined in `hosts/nexus-unbound/hypr/.config/hypr/bindings.conf`. These extend and override Omarchy's defaults.
+
+### Applications
+
+| Binding                | Action                                      |
+|------------------------|---------------------------------------------|
+| `SUPER RETURN`         | New terminal (at current terminal's cwd)    |
+| `SUPER ALT RETURN`     | New tmux session in terminal                |
+| `SUPER SHIFT RETURN`   | Launch browser                              |
+| `SUPER SHIFT F`        | Open file manager                           |
+| `SUPER ALT SHIFT F`    | Open file manager at current terminal's cwd |
+| `SUPER SHIFT B`        | Launch browser                              |
+| `SUPER SHIFT ALT B`    | Launch browser (private mode)               |
+| `SUPER SHIFT M`        | Spotify                                     |
+| `SUPER SHIFT N`        | Editor                                      |
+| `SUPER SHIFT T`        | btop (activity monitor)                     |
+| `SUPER SHIFT D`        | lazydocker                                  |
+| `SUPER SHIFT S`        | Signal                                      |
+| `SUPER SHIFT O`        | Obsidian                                    |
+| `SUPER SHIFT W`        | Typora                                      |
+| `SUPER SHIFT /`        | 1Password                                   |
+
+### Web apps
+
+| Binding                | Web app           |
+|------------------------|-------------------|
+| `SUPER SHIFT A`        | Claude            |
+| `SUPER SHIFT ALT A`    | Claude Code       |
+| `SUPER SHIFT C`        | Proton Calendar   |
+| `SUPER SHIFT E`        | Proton Mail       |
+| `SUPER SHIFT Y`        | YouTube           |
+| `SUPER SHIFT ALT G`    | ChatGPT           |
+| `SUPER SHIFT CTRL G`   | Google Messages   |
+| `SUPER SHIFT P`        | Google Photos     |
+| `SUPER SHIFT X`        | X (Twitter)       |
+| `SUPER SHIFT ALT X`    | X — new post      |
+| `SUPER SHIFT G`        | GitHub            |
+
+### Workspace / monitor
+
+| Binding                    | Action                              |
+|----------------------------|-------------------------------------|
+| `SUPER SHIFT ALT UP`       | Move workspace to monitor above     |
+| `SUPER SHIFT ALT DOWN`     | Move workspace to monitor below     |
+
 ## Notes for future edits
 
 - Keep hardware-specific settings in this host package, not base packages.
