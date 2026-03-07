@@ -26,7 +26,7 @@ Available palettes:
 
 Two-line prompt:
 
-```
+```text
 ╭─ <os> <user> <host> <shell>
 │  <dir> <git branch> <git status> <git metrics> <cloud> <lang versions> <time>
 ╰─ <exit status> <jobs> <duration> <character>

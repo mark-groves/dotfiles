@@ -4,56 +4,56 @@ Tmux configuration stow package. Stows to `~/.config/tmux/tmux.conf`.
 
 ## Prefix
 
-| Key        | Role               |
-|------------|--------------------|
-| `C-Space`  | Primary prefix     |
-| `C-b`      | Secondary prefix   |
+| Key          | Role               |
+|--------------|--------------------|
+| `Ctrl+Space` | Primary prefix     |
+| `Ctrl+b`     | Secondary prefix   |
 
 ## Keybindings
 
 ### Panes
 
-| Key              | Action                          |
-|------------------|---------------------------------|
-| `prefix h`       | Split horizontally              |
-| `prefix v`       | Split vertically                |
-| `prefix x`       | Kill pane                       |
-| `C-M-←/→/↑/↓`   | Move between panes              |
-| `C-M-S-←/→/↑/↓` | Resize pane (5 cells)           |
+| Key                       | Action                |
+|---------------------------|-----------------------|
+| `Prefix + h`              | Split horizontally    |
+| `Prefix + v`              | Split vertically      |
+| `Prefix + x`              | Kill pane             |
+| `Ctrl+Alt+←/→/↑/↓`         | Move between panes    |
+| `Ctrl+Alt+Shift+←/→/↑/↓`   | Resize pane (5 cells) |
 
 ### Windows
 
-| Key          | Action                          |
-|--------------|---------------------------------|
-| `prefix c`   | New window (at current path)    |
-| `prefix k`   | Kill window                     |
-| `prefix r`   | Rename window                   |
-| `M-1` … `M-9`| Jump to window by number        |
-| `M-←/→`      | Previous / next window          |
+| Key               | Action                       |
+|-------------------|------------------------------|
+| `Prefix + c`      | New window (at current path) |
+| `Prefix + k`      | Kill window                  |
+| `Prefix + r`      | Rename window                |
+| `Alt+1` … `Alt+9` | Jump to window by number     |
+| `Alt+←/→`         | Previous / next window       |
 
 ### Sessions
 
-| Key        | Action                          |
-|------------|---------------------------------|
-| `prefix C` | New session (at current path)   |
-| `prefix K` | Kill session                    |
-| `prefix R` | Rename session                  |
-| `prefix P` | Previous session                |
-| `prefix N` | Next session                    |
-| `M-↑/↓`    | Previous / next session         |
+| Key          | Action                        |
+|--------------|-------------------------------|
+| `Prefix + C` | New session (at current path) |
+| `Prefix + K` | Kill session                  |
+| `Prefix + R` | Rename session                |
+| `Prefix + P` | Previous session              |
+| `Prefix + N` | Next session                  |
+| `Alt+↑/↓`    | Previous / next session       |
 
 ### Copy mode (vi)
 
-| Key | Action                        |
-|-----|-------------------------------|
-| `v` | Begin selection               |
-| `y` | Copy selection and exit       |
+| Key | Action                  |
+|-----|-------------------------|
+| `v` | Begin selection         |
+| `y` | Copy selection and exit |
 
 ### Other
 
-| Key        | Action                        |
-|------------|-------------------------------|
-| `prefix q` | Reload config                 |
+| Key          | Action        |
+|--------------|---------------|
+| `Prefix + q` | Reload config |
 
 ## Notable settings
 
