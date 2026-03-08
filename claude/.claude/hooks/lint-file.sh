@@ -6,7 +6,8 @@ set -euo pipefail
 # to the appropriate linter script based on file type.
 
 if ! command -v jq &>/dev/null; then
-  exit 0
+  echo "Error: jq is required but not installed" >&2
+  exit 1
 fi
 
 INPUT=$(cat)
@@ -29,7 +30,7 @@ case "$FILE_PATH" in
   *.py)
     exec "$SCRIPT_DIR/lint-python.sh" "$FILE_PATH"
     ;;
-  *.sh | *.bash)
+  *.sh | *.bash | *.zsh)
     exec "$SCRIPT_DIR/lint-bash.sh" "$FILE_PATH"
     ;;
   *.md)

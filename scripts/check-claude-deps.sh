@@ -18,12 +18,17 @@ if [[ ${#MISSING[@]} -gt 0 ]]; then
   done
   echo ""
   echo "Install suggestions:"
-  echo "  ruff:              uv tool install ruff"
-  echo "  shellcheck:        apt install shellcheck / brew install shellcheck"
-  echo "  markdownlint-cli2: npm install -g markdownlint-cli2"
-  echo "  yamllint:          uv tool install yamllint"
-  echo "  jq:                apt install jq / brew install jq"
-  echo "  hadolint:          brew install hadolint / download binary"
+  declare -A INSTALL_HINTS=(
+    [ruff]="uv tool install ruff"
+    [shellcheck]="apt install shellcheck / brew install shellcheck"
+    [markdownlint-cli2]="npm install -g markdownlint-cli2"
+    [yamllint]="uv tool install yamllint"
+    [jq]="apt install jq / brew install jq"
+    [hadolint]="brew install hadolint / download binary"
+  )
+  for dep in "${MISSING[@]}"; do
+    echo "  $dep: ${INSTALL_HINTS[$dep]}"
+  done
   exit 1
 else
   echo "All linter dependencies installed."

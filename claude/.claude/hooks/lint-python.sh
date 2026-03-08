@@ -10,16 +10,16 @@ ERRORS=""
 
 # Report lint issues without auto-fixing (let Claude fix them)
 LINT_OUTPUT=$(ruff check --output-format=concise "$FILE" 2>&1) || {
-  ERRORS+="ruff lint issues:\n$LINT_OUTPUT\n"
+  ERRORS+="ruff lint issues:"$'\n'"$LINT_OUTPUT"$'\n'
 }
 
 # Report format issues without auto-applying (let Claude fix them)
 FORMAT_OUTPUT=$(ruff format --check --diff "$FILE" 2>&1) || {
-  ERRORS+="ruff format issues:\n$FORMAT_OUTPUT\n"
+  ERRORS+="ruff format issues:"$'\n'"$FORMAT_OUTPUT"$'\n'
 }
 
 if [[ -n "$ERRORS" ]]; then
-  printf '%b' "$ERRORS" >&2
+  printf '%s' "$ERRORS" >&2
   exit 2
 fi
 exit 0
