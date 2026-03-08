@@ -8,8 +8,8 @@ fi
 
 ERRORS=""
 
-# Auto-fix safe issues; report unfixable ones
-LINT_OUTPUT=$(ruff check --fix --output-format=concise "$FILE" 2>&1) || {
+# Report lint issues without auto-fixing (let Claude fix them)
+LINT_OUTPUT=$(ruff check --output-format=concise "$FILE" 2>&1) || {
   ERRORS+="ruff lint issues:\n$LINT_OUTPUT\n"
 }
 
@@ -19,7 +19,7 @@ FORMAT_OUTPUT=$(ruff format --check --diff "$FILE" 2>&1) || {
 }
 
 if [[ -n "$ERRORS" ]]; then
-  echo -e "$ERRORS" >&2
+  printf '%b' "$ERRORS" >&2
   exit 2
 fi
 exit 0
