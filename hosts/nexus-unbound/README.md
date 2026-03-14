@@ -36,7 +36,7 @@ If running on this host, you can omit the hostname:
 This host currently assumes a dual-monitor setup:
 
 - Internal display: `eDP-2`, scale `2` (HiDPI)
-- External display: `DP-3`, scale `1`, positioned above internal
+- External display: `DP-3` (LG Ultrawide), scale `1`, positioned above and offset left of internal
 - Mixed-DPI GTK scaling: `GDK_SCALE=1`
 
 See monitor config in:

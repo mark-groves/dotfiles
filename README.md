@@ -4,7 +4,7 @@ Simple stow-first dotfiles with idempotent setup.
 
 ## Layout
 
-- Top-level directories (excluding `hosts` and `scripts`) are base stow packages.
+- Top-level directories (excluding `hosts`, `scripts`, `.git`, `.github`, and `.claude`) are base stow packages.
 - Package contents mirror `$HOME` exactly.
 - Per-host overrides live under `hosts/<hostname>/<package>` and are stowed after base packages.
 
@@ -25,13 +25,13 @@ stow --version
 Stow a single host package:
 
 ```sh
-stow -t "$HOME" hosts/<hostname>/<package>
+stow -t "$HOME" -d hosts/<hostname> <package>
 ```
 
 Restow (idempotent refresh):
 
 ```sh
-stow -t "$HOME" --restow hosts/<hostname>/<package>
+stow -t "$HOME" --restow -d hosts/<hostname> <package>
 ```
 
 Stow all base packages:
