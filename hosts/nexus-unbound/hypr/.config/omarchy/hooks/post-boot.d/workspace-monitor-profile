@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-hyprctl dispatch exec /home/grovr/.config/hypr/scripts/workspace-monitor-profile\ watch >/dev/null
+script_path="${HOME}/.config/hypr/scripts/workspace-monitor-profile"
+hyprctl dispatch exec "${script_path} watch" >/dev/null
