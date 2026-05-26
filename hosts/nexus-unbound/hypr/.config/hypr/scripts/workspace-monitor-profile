@@ -2,7 +2,7 @@
 set -euo pipefail
 
 internal_monitor="${INTERNAL_MONITOR:-eDP-2}"
-output_file="${WORKSPACE_PROFILE_FILE:-$HOME/.config/hypr/workspaces.active.conf}"
+output_file="${WORKSPACE_PROFILE_FILE:-$HOME/.local/state/omarchy/hypr/workspaces/99-active.conf}"
 
 active_monitors_json() {
   hyprctl -j monitors
