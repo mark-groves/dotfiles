@@ -41,5 +41,8 @@ Stows base and host-specific packages using GNU Stow.
 ## Notes
 
 - Uses `--restow --no-folding` for all stow operations to prevent directory symlinks.
-- Host packages are discovered from `hosts/<hostname>/`.
+- Base packages are discovered from top-level directories outside `.git*`,
+  `.claude`, `hosts`, and `scripts`.
+- Host packages are discovered from `hosts/<hostname>/` and must contain at
+  least one real file.
 - Exits non-zero only if all packages fail; partial failures produce a warning.

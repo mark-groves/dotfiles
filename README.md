@@ -1,12 +1,17 @@
 # dotfiles
 
-Simple stow-first dotfiles with idempotent setup.
+Simple GNU Stow-based dotfiles with idempotent setup.
 
 ## Layout
 
-- Top-level directories (excluding `hosts`, `scripts`, `.git`, `.github`, and `.claude`) are base stow packages.
+- Top-level directories (excluding `hosts`, `scripts`, `.git*`, and `.claude`) are base stow packages.
 - Package contents mirror `$HOME` exactly.
 - Per-host overrides live under `hosts/<hostname>/<package>` and are stowed after base packages.
+
+Current base packages:
+
+- `git` -> `~/.config/git/config`
+- `starship` -> `~/.config/starship.toml`
 
 Example:
 
@@ -16,22 +21,17 @@ hosts/<hostname>/hypr/.config/hypr/...
 
 ## Usage
 
-Install stow if needed:
+Check that GNU Stow is installed:
 
 ```sh
 stow --version
 ```
 
-Stow a single host package:
+Dry-run first:
 
 ```sh
-stow -t "$HOME" -d hosts/<hostname> <package>
-```
-
-Restow (idempotent refresh):
-
-```sh
-stow -t "$HOME" --restow -d hosts/<hostname> <package>
+./scripts/stow.sh base -n
+./scripts/stow.sh host -n
 ```
 
 Stow all base packages:
@@ -52,7 +52,16 @@ Stow a specific host's packages:
 ./scripts/stow.sh host <hostname>
 ```
 
+For low-level troubleshooting, this is the equivalent shape for one host
+package:
+
+```sh
+stow -t "$HOME" --restow --no-folding -d hosts/<hostname> <package>
+```
+
 ## Notes
 
 - Keep only source-of-truth files here; avoid generated artifacts.
 - Host packages should only contain overrides, so the base packages stay portable.
+- Use `scripts/stow.sh` for normal refreshes and symlink repairs so base and
+  host package discovery stays consistent.

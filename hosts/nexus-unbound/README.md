@@ -33,10 +33,12 @@ If running on this host, you can omit the hostname:
 
 ## Hyprland profile for this host
 
-This host currently assumes a dual-monitor setup:
+This host package currently defines a fixed dual-monitor profile, with a generic
+fallback for other attached displays:
 
 - Internal display: `eDP-2`, scale `2` (HiDPI)
 - External display: `DP-3` (LG Ultrawide), scale `1`, positioned above and offset left of internal
+- Other monitors: preferred mode, automatic position, scale `1`
 - Mixed-DPI GTK scaling: `GDK_SCALE=1`
 
 See monitor config in:
@@ -68,6 +70,7 @@ Defined in `hosts/nexus-unbound/hypr/.config/hypr/bindings.conf`. These extend a
 | `SUPER SHIFT B`        | Launch browser                              |
 | `SUPER SHIFT ALT B`    | Launch browser (private mode)               |
 | `SUPER SHIFT M`        | Spotify                                     |
+| `SUPER SHIFT ALT M`    | Music TUI (`cliamp`)                        |
 | `SUPER SHIFT N`        | Editor                                      |
 | `SUPER SHIFT T`        | btop (activity monitor)                     |
 | `SUPER SHIFT D`        | lazydocker                                  |
@@ -85,12 +88,12 @@ Defined in `hosts/nexus-unbound/hypr/.config/hypr/bindings.conf`. These extend a
 | `SUPER SHIFT C`        | Proton Calendar   |
 | `SUPER SHIFT E`        | Proton Mail       |
 | `SUPER SHIFT Y`        | YouTube           |
-| `SUPER SHIFT ALT G`    | ChatGPT           |
 | `SUPER SHIFT CTRL G`   | Google Messages   |
 | `SUPER SHIFT P`        | Google Photos     |
 | `SUPER SHIFT X`        | X (Twitter)       |
 | `SUPER SHIFT ALT X`    | X — new post      |
 | `SUPER SHIFT G`        | GitHub            |
+| `SUPER SHIFT ALT G`    | ChatGPT           |
 
 ### Workspace / monitor
 
@@ -108,6 +111,9 @@ Defined in `hosts/nexus-unbound/hypr/.config/hypr/bindings.conf`. These extend a
   `~/.config/hypr/` instead.
 - If monitor identifiers change, run `hyprctl monitors` and update
   `monitors.conf` and `workspaces.conf` together.
+- The `SUPER SHIFT ALT G` web-app binding is explicitly reassigned to ChatGPT
+  at the end of `bindings.conf`; keep that final override in mind when adding
+  web-app shortcuts.
 
 ## Troubleshooting
 
