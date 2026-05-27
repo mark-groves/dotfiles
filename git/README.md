@@ -24,8 +24,10 @@ Git configuration stow package. Stows to `~/.config/git/config`.
 | fetch  | `pruneTags = true`          | Removes deleted remote tags on fetch                        |
 | diff   | `algorithm = histogram`     | Clearer diffs on moved/edited lines                         |
 | diff   | `colorMoved = plain`        | Highlights moved blocks in diffs                            |
+| diff   | `mnemonicPrefix = true`     | Shows clearer source/destination prefixes in diffs          |
 | commit | `verbose = true`            | Includes diff in commit message editor                      |
 | commit | `gpgsign = true`            | Signs all commits with SSH key via 1Password                |
+| column | `ui = auto`                 | Uses column output when Git can present it cleanly          |
 | branch | `sort = -committerdate`     | Branch list sorted by most recent activity                  |
 | tag    | `sort = -version:refname`   | Tags sorted by semantic version                             |
 | rerere | `enabled + autoupdate`      | Records and auto-replays conflict resolutions               |

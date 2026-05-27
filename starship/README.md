@@ -40,8 +40,9 @@ A compact single-line variant is commented out in the config for use in narrow t
 - **Shell indicator** — shows current shell name
 - **Directory** — truncated to 3 path segments
 - **Git** — branch, commit hash, state, status flags (`+` staged, `!` modified, `?` untracked, etc.), `+N/-N` metrics
-- **Cloud** — AWS, GCloud, Kubernetes (auto-detected)
+- **Cloud / infrastructure** — AWS, GCloud, Kubernetes, Terraform, Helm, and Docker context (auto-detected)
 - **Languages** — Node, Python, Rust, Go, Java, Lua, C, and more (auto-detected)
+- **Package** — package metadata when Starship detects a supported project file
 - **Command duration** — shown after 800 ms
 - **Exit status** — shown on non-zero exit
 - **Jobs** — shown when background jobs are running
