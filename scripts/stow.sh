@@ -41,11 +41,22 @@ remove_obsolete_links() {
   local root="$1" dry_run="$2"
   local old_link="$HOME/.config/git/config"
   local old_target="$root/git/.config/git/config"
+  local old_host_root="$root/hosts/nexus-unbound/hypr"
+  local old_host_config="$HOME/.config/hypr"
 
   if [[ -L "$old_link" ]] &&
      [[ "$(realpath --canonicalize-missing "$old_link")" == "$old_target" ]]; then
     printf 'UNLINK: %s (obsolete package path)\n' "$old_link" >&2
     "$dry_run" || rm -- "$old_link"
+  fi
+
+  if [[ -d "$old_host_config" ]]; then
+    while IFS= read -r -d '' old_link; do
+      if [[ "$(realpath --canonicalize-missing "$old_link")" == "$old_host_root/"* ]]; then
+        printf 'UNLINK: %s (obsolete host package)\n' "$old_link" >&2
+        "$dry_run" || rm -- "$old_link"
+      fi
+    done < <(find "$old_host_config" -maxdepth 1 -type l -print0)
   fi
 }
 

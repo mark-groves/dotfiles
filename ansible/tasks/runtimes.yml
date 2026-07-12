@@ -39,6 +39,17 @@
       - corepack
     creates: "{{ ansible_facts.user_dir }}/.local/bin/corepack"
 
+- name: Inspect the pnpm Corepack shim
+  ansible.builtin.command:
+    argv:
+      - readlink
+      - --canonicalize
+      - "{{ ansible_facts.user_dir }}/.local/bin/pnpm"
+  register: pnpm_shim
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
 - name: Enable the pnpm Corepack shim
   ansible.builtin.command:
     argv:
@@ -47,7 +58,10 @@
       - --install-directory
       - "{{ ansible_facts.user_dir }}/.local/bin"
       - pnpm
-    creates: "{{ ansible_facts.user_dir }}/.local/bin/pnpm"
+  when: >-
+    pnpm_shim.rc != 0 or
+    pnpm_shim.stdout != ansible_facts.user_dir + '/.local/lib/node_modules/corepack/dist/pnpm.js'
+  changed_when: true
 
 - name: Inspect active pnpm version
   ansible.builtin.command: "{{ ansible_facts.user_dir }}/.local/bin/pnpm --version"
