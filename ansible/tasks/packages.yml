@@ -5,6 +5,7 @@
       {{ fedora_base_packages
          + fedora_build_packages
          + fedora_language_packages
+         + fedora_node_packages[ansible_facts.distribution_major_version]
          + fedora_container_packages
          + fedora_desktop_packages }}
     state: present

@@ -33,14 +33,22 @@ fedora_build_packages:
 fedora_language_packages:
   - neovim
   - golang
-  - nodejs22
-  - nodejs22-bin
-  - nodejs22-npm
-  - nodejs22-npm-bin
   - python3
   - python3-pip
   - uv
   - rustup
+
+# Fedora 43 makes Node.js 22 the default and uses unversioned package names.
+# Fedora 44 retains versioned packages and splits out the command symlinks.
+fedora_node_packages:
+  "43":
+    - nodejs
+    - nodejs-npm
+  "44":
+    - nodejs22
+    - nodejs22-bin
+    - nodejs22-npm
+    - nodejs22-npm-bin
 
 fedora_container_packages:
   - podman

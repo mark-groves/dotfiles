@@ -6,9 +6,9 @@ This repository has two deliberately separate responsibilities:
 2. **Provisioning** installs those applications and their prerequisites through
    an OS-specific Ansible implementation.
 
-Fedora is the only implemented operating system today. The layout allows other
-platform implementations to be added when they can be tested, without filling
-the repository with speculative package mappings.
+Fedora 43 and 44 are the implemented operating systems today. The layout allows
+other platform implementations to be added when they can be tested, without
+filling the repository with speculative package mappings.
 
 ## What is managed
 

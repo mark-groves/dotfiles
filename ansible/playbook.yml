@@ -18,6 +18,14 @@
       ansible.builtin.include_vars: vars/Fedora.yml
       tags: [always]
 
+    - name: Require a supported Fedora release
+      ansible.builtin.assert:
+        that: ansible_facts.distribution_major_version in fedora_node_packages
+        fail_msg: >-
+          Fedora {{ ansible_facts.distribution_major_version }} is not mapped.
+          Supported releases: {{ fedora_node_packages.keys() | sort | join(', ') }}.
+      tags: [always]
+
   tasks:
     - name: Configure software repositories
       ansible.builtin.include_tasks:

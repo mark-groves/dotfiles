@@ -36,7 +36,32 @@ fi
 
 printf 'Running the Fedora workstation playbook.\n'
 ansible_args=()
-if ! sudo -n true 2>/dev/null; then
+requested_tags=""
+expect_tags=false
+for arg in "$@"; do
+  if "$expect_tags"; then
+    requested_tags+="${requested_tags:+,}${arg}"
+    expect_tags=false
+    continue
+  fi
+  case "$arg" in
+    --tags|-t) expect_tags=true ;;
+    --tags=*) requested_tags+="${requested_tags:+,}${arg#--tags=}" ;;
+  esac
+done
+
+needs_become=true
+if [[ -n "$requested_tags" ]]; then
+  needs_become=false
+  read -r -a selected_tags <<< "${requested_tags//,/ }"
+  for tag in "${selected_tags[@]}"; do
+    case "$tag" in
+      packages|repositories|nvidia|all|tagged|never) needs_become=true ;;
+    esac
+  done
+fi
+
+if "$needs_become" && ! sudo -n true 2>/dev/null; then
   printf 'System package and repository tasks require your sudo password.\n'
   ansible_args+=(--ask-become-pass)
 fi
