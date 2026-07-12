@@ -13,7 +13,9 @@
 
 - name: Set stable Rust as the default toolchain
   ansible.builtin.command: rustup default stable
-  when: rustup_toolchains.rc != 0 or 'default' not in rustup_toolchains.stdout
+  when: >-
+    rustup_toolchains.rc != 0 or
+    rustup_toolchains.stdout is not regex('(?m)^stable(?:-|\s).*\([^\n]*default[^\n]*\)$')
   changed_when: true
 
 - name: Install Corepack into the user-local prefix
@@ -50,7 +52,7 @@
     fail_msg: "Starship is not mapped for architecture {{ ansible_facts.architecture }}"
 
 - name: Inspect installed Starship version
-  ansible.builtin.command: starship --version
+  ansible.builtin.command: "{{ ansible_facts.user_dir }}/.local/bin/starship --version"
   register: starship_current
   changed_when: false
   failed_when: false

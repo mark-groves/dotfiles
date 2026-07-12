@@ -26,6 +26,7 @@
 
 [fetch]
 	prune = true
+	pruneTags = true
 
 [diff]
 	algorithm = histogram
@@ -53,7 +54,7 @@
 	format = ssh
 
 [gpg "ssh"]
-	program = op-ssh-sign
+	program = ~/.local/bin/op-ssh-sign
 
 [credential "https://github.com"]
 	helper =

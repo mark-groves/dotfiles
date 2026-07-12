@@ -37,6 +37,18 @@ load_default_packages() {
   mapfile -t packages < <(sed -e 's/[[:space:]]*#.*$//' -e '/^[[:space:]]*$/d' "$manifest")
 }
 
+remove_obsolete_links() {
+  local root="$1" dry_run="$2"
+  local old_link="$HOME/.config/git/config"
+  local old_target="$root/git/.config/git/config"
+
+  if [[ -L "$old_link" ]] &&
+     [[ "$(realpath --canonicalize-missing "$old_link")" == "$old_target" ]]; then
+    printf 'UNLINK: %s (obsolete package path)\n' "$old_link" >&2
+    "$dry_run" || rm -- "$old_link"
+  fi
+}
+
 main() {
   [[ ${EUID:-$(id -u)} -ne 0 ]] || die "do not run Stow as root or with sudo"
   command -v stow >/dev/null 2>&1 || die "GNU Stow is required; run ./bootstrap.sh first"
@@ -70,6 +82,8 @@ main() {
   cd "$root"
   printf 'Target: %s\n' "$HOME"
   "$dry_run" && printf 'Mode: dry-run\n'
+
+  remove_obsolete_links "$root" "$dry_run"
 
   local package
   for package in "${packages[@]}"; do

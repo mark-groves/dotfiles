@@ -23,8 +23,8 @@
       ansible.builtin.include_tasks:
         file: tasks/repositories.yml
         apply:
-          tags: [repositories]
-      tags: [repositories]
+          tags: [repositories, nvidia]
+      tags: [repositories, nvidia]
 
     - name: Install workstation packages
       ansible.builtin.include_tasks:

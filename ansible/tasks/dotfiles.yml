@@ -4,6 +4,7 @@
     argv:
       - "{{ playbook_dir }}/../scripts/stow.sh"
       - --dry-run
+      - --restow
   changed_when: false
 
 - name: Link portable dotfile packages
@@ -11,5 +12,6 @@
     argv:
       - "{{ playbook_dir }}/../scripts/stow.sh"
       - --verbose
+      - --restow
   register: stow_result
   changed_when: "'LINK:' in stow_result.stderr or 'UNLINK:' in stow_result.stderr"

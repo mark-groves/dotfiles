@@ -105,8 +105,8 @@ Apply selected packages:
 
 The wrapper refuses to run as root and returns a failure if any package cannot
 be linked. Package selection is explicit in `stow-packages.txt`, so unrelated
-top-level directories cannot accidentally be deployed. Use `--restow` only to
-repair links or remove stale links after deleting a file from a package.
+top-level directories cannot accidentally be deployed. Ansible uses `--restow`
+to repair links during provisioning; it is also available for manual repairs.
 
 ## Git authentication and signing
 
