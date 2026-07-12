@@ -1,67 +1,162 @@
-# dotfiles
+# Portable development workstation
 
-Simple GNU Stow-based dotfiles with idempotent setup.
+This repository has two deliberately separate responsibilities:
 
-## Layout
+1. **Dotfiles** configure portable applications through GNU Stow.
+2. **Provisioning** installs those applications and their prerequisites through
+   an OS-specific Ansible implementation.
 
-- Top-level directories (excluding `hosts`, `scripts`, `.git*`, and `.claude`) are base stow packages.
-- Package contents mirror `$HOME` exactly.
-- Per-host overrides live under `hosts/<hostname>/<package>` and are stowed after base packages.
+Fedora is the only implemented operating system today. The layout allows other
+platform implementations to be added when they can be tested, without filling
+the repository with speculative package mappings.
 
-Current base packages:
+## What is managed
 
-- `git` -> `~/.config/git/config`
-- `starship` -> `~/.config/starship.toml`
+The Fedora developer profile installs:
 
-Example:
+- Git, GitHub CLI, Neovim/LazyVim, Ghostty, tmux, and Starship
+- TypeScript/Node.js/pnpm, Python/uv, Rust, and Go tooling
+- C/C++ build and debugging tools
+- Podman, Buildah, and Podman Compose
+- Cursor, 1Password desktop, and 1Password CLI
+- common terminal utilities and JetBrains Mono Nerd Font
+
+NVIDIA drivers are available as an explicit, non-default profile because they
+affect kernel modules and may require a reboot.
+
+## Repository layout
 
 ```text
-hosts/<hostname>/hypr/.config/hypr/...
+ansible/             Fedora provisioning and package mapping
+git/                 portable Git configuration
+ghostty/             Ghostty configuration
+nvim/                LazyVim configuration and plugin lock file
+shell/               additive shell fragments and portable helpers
+starship/            Starship prompt configuration
+tmux/                tmux configuration
+scripts/stow.sh      safe Stow wrapper
+scripts/check.sh     repository validation
+stow-packages.txt    explicit dotfile deployment order
 ```
 
-## Usage
+Stow package contents mirror paths relative to `$HOME`. Generated application
+state, caches, authentication tokens, SSH private keys, and 1Password data must
+never be committed.
 
-Check that GNU Stow is installed:
+## First deployment on Fedora
 
-```sh
-stow --version
+Inspect the complete predicted Ansible change first:
+
+```bash
+./bootstrap.sh --check --diff
 ```
 
-Dry-run first:
+`bootstrap.sh` detects Fedora and offers to install only `ansible-core` and
+`stow` when missing. `--check` asks Ansible to predict changes and `--diff`
+shows managed-file differences. Some command-based tasks are skipped in check
+mode because they cannot safely predict their result.
 
-```sh
-./scripts/stow.sh base -n
-./scripts/stow.sh host -n
+Apply the default workstation profile:
+
+```bash
+./bootstrap.sh
 ```
 
-Stow all base packages:
+Ansible asks for sudo authentication only when repositories or system packages
+need it and no passwordless/cached sudo session is available. The script must be
+run as the normal desktop user, never with `sudo`.
 
-```sh
-./scripts/stow.sh base
+Run only selected areas with Ansible tags:
+
+```bash
+./bootstrap.sh --tags packages
+./bootstrap.sh --tags runtimes,fonts
+./bootstrap.sh --tags dotfiles
 ```
 
-Stow host-specific packages for this machine:
+Install or verify the optional NVIDIA package set:
 
-```sh
-./scripts/stow.sh host
+```bash
+./bootstrap.sh --tags nvidia
 ```
 
-Stow a specific host's packages:
+The NVIDIA task never reboots automatically. Wait for the akmods build to
+finish, reboot deliberately, and verify the driver with `nvidia-smi`.
 
-```sh
-./scripts/stow.sh host <hostname>
+## Dotfiles only
+
+Preview all configured packages:
+
+```bash
+./scripts/stow.sh --dry-run --verbose
 ```
 
-For low-level troubleshooting, this is the equivalent shape for one host
-package:
+Apply all packages:
 
-```sh
-stow -t "$HOME" --restow --no-folding -d hosts/<hostname> <package>
+```bash
+./scripts/stow.sh
 ```
 
-## Notes
+Apply selected packages:
 
-- Keep only source-of-truth files here; avoid generated artifacts.
-- Host packages should only contain overrides, so the base packages stay portable.
-- Use `scripts/stow.sh` for normal refreshes and symlink repairs so base and
-  host package discovery stays consistent.
+```bash
+./scripts/stow.sh git ghostty
+```
+
+The wrapper refuses to run as root and returns a failure if any package cannot
+be linked. Package selection is explicit in `stow-packages.txt`, so unrelated
+top-level directories cannot accidentally be deployed. Use `--restow` only to
+repair links or remove stale links after deleting a file from a package.
+
+## Git authentication and signing
+
+Ordinary commits are intentionally unsigned, which keeps unattended agent work
+from blocking on a 1Password approval dialog:
+
+```bash
+git commit
+```
+
+Create a personally signed commit explicitly:
+
+```bash
+git cis
+```
+
+The `cis` alias invokes `git commit -S` through the portable `op-ssh-sign`
+wrapper. The wrapper locates 1Password's signing helper on supported platforms.
+
+For noninteractive fetch and push, authenticate GitHub CLI over HTTPS:
+
+```bash
+gh auth login --git-protocol https --web
+```
+
+This authenticates with GitHub in a browser. The managed Git configuration
+already delegates HTTPS credentials to `gh`. Verify the credential storage
+offered by `gh` on each OS; credentials themselves are never managed by these
+dotfiles.
+
+## Validation and idempotency
+
+Run repository checks:
+
+```bash
+./scripts/check.sh
+```
+
+After the first successful deployment, run it again:
+
+```bash
+./bootstrap.sh
+```
+
+The second run should report no changes. A recurring change is treated as an
+idempotency defect and should be fixed rather than documented as normal.
+
+## Adding another operating system
+
+Do not pass Fedora package names directly to another package manager. Add a
+tested OS-specific package mapping and task implementation while reusing the
+portable Stow packages. The bootstrap dispatcher should reject unsupported
+systems until that implementation exists.

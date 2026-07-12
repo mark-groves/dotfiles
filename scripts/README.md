@@ -1,7 +1,8 @@
-# scripts
+# Helper scripts
 
-Helper scripts for managing dotfiles.
+- `check.sh` validates shell, Git, JSON, Ansible, and Stow configuration using
+  the tools currently installed.
+- `stow.sh` links the packages listed in `stow-packages.txt` into `$HOME`.
 
-| Script | Description |
-|--------|-------------|
-| [`stow.sh`](stow.md) | Stow base and host-specific packages using GNU Stow |
+Both scripts are safe to invoke directly. Run `stow.sh --dry-run` before a
+manual deployment to inspect link conflicts.

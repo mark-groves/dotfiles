@@ -1,0 +1,81 @@
+---
+- name: Inspect installed Rust toolchains
+  ansible.builtin.command: rustup toolchain list
+  register: rustup_toolchains
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Install the stable Rust toolchain
+  ansible.builtin.command: rustup toolchain install stable
+  when: rustup_toolchains.rc != 0 or 'stable-' not in rustup_toolchains.stdout
+  changed_when: true
+
+- name: Set stable Rust as the default toolchain
+  ansible.builtin.command: rustup default stable
+  when: rustup_toolchains.rc != 0 or 'default' not in rustup_toolchains.stdout
+  changed_when: true
+
+- name: Install Corepack into the user-local prefix
+  ansible.builtin.command:
+    argv:
+      - npm
+      - install
+      - --global
+      - --prefix
+      - "{{ ansible_facts.user_dir }}/.local"
+      - corepack
+    creates: "{{ ansible_facts.user_dir }}/.local/bin/corepack"
+
+- name: Inspect active pnpm version
+  ansible.builtin.command: "{{ ansible_facts.user_dir }}/.local/bin/pnpm --version"
+  register: pnpm_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Activate the selected pnpm version
+  ansible.builtin.command:
+    argv:
+      - "{{ ansible_facts.user_dir }}/.local/bin/corepack"
+      - install
+      - --global
+      - "pnpm@{{ pnpm_version }}"
+  when: pnpm_current.rc != 0 or pnpm_current.stdout | trim != pnpm_version
+  changed_when: true
+
+- name: Require a supported Starship architecture
+  ansible.builtin.assert:
+    that: ansible_facts.architecture in starship_targets
+    fail_msg: "Starship is not mapped for architecture {{ ansible_facts.architecture }}"
+
+- name: Inspect installed Starship version
+  ansible.builtin.command: starship --version
+  register: starship_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Install the selected Starship release
+  when: >-
+    starship_current.rc != 0 or
+    ('starship ' + starship_version) not in starship_current.stdout
+  block:
+    - name: Download the verified Starship archive
+      ansible.builtin.get_url:
+        url: >-
+          {{ starship_release_base_url }}/v{{ starship_version }}/starship-{{ starship_targets[ansible_facts.architecture] }}.tar.gz
+        dest: "/tmp/starship-{{ starship_version }}.tar.gz"
+        checksum: >-
+          sha256:{{ starship_release_base_url }}/v{{ starship_version }}/starship-{{ starship_targets[ansible_facts.architecture] }}.tar.gz.sha256
+        mode: "0644"
+
+    - name: Extract Starship into the user-local binary directory
+      ansible.builtin.unarchive:
+        src: "/tmp/starship-{{ starship_version }}.tar.gz"
+        dest: "{{ ansible_facts.user_dir }}/.local/bin"
+        remote_src: true
+        include:
+          - starship
+        mode: "0755"
+      when: not ansible_check_mode

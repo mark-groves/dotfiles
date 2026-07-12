@@ -1,0 +1,11 @@
+---
+- name: Install Fedora workstation package groups
+  ansible.builtin.dnf:
+    name: >-
+      {{ fedora_base_packages
+         + fedora_build_packages
+         + fedora_language_packages
+         + fedora_container_packages
+         + fedora_desktop_packages }}
+    state: present
+  become: true

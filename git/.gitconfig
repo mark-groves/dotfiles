@@ -1,0 +1,72 @@
+# Portable Git defaults. Secrets and authentication tokens do not belong here.
+
+[user]
+	name = Mark Groves
+	email = mark@grovr.au
+	signingKey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID+7IIgzSsQxb6Vys3v9d724lhaYnmnYXNQxsu5yHoDI
+
+[alias]
+	co = checkout
+	sw = switch
+	br = branch
+	ci = commit
+	# Personal, explicitly signed commit. Ordinary/agent commits remain unattended.
+	cis = commit -S
+	st = status
+
+[init]
+	defaultBranch = main
+
+[pull]
+	rebase = true
+
+[push]
+	autoSetupRemote = true
+	followTags = true
+
+[fetch]
+	prune = true
+
+[diff]
+	algorithm = histogram
+	colorMoved = plain
+	mnemonicPrefix = true
+
+[commit]
+	verbose = true
+	gpgSign = false
+
+[column]
+	ui = auto
+
+[branch]
+	sort = -committerdate
+
+[tag]
+	sort = -version:refname
+
+[rerere]
+	enabled = true
+	autoupdate = true
+
+[gpg]
+	format = ssh
+
+[gpg "ssh"]
+	program = op-ssh-sign
+
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential
+
+# Installed by `git lfs install`; retaining it here makes clean deployments
+# deterministic while remaining harmless when a repository does not use LFS.
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

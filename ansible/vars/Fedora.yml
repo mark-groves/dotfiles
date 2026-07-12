@@ -1,0 +1,79 @@
+---
+# Fedora package names implementing the portable developer workstation profile.
+fedora_base_packages:
+  - git
+  - git-lfs
+  - gh
+  - stow
+  - tmux
+  - ripgrep
+  - fd-find
+  - fzf
+  - bat
+  - jq
+  - yq
+  - direnv
+  - ShellCheck
+  - shfmt
+  - wl-clipboard
+
+fedora_build_packages:
+  - gcc
+  - gcc-c++
+  - make
+  - clang
+  - clang-tools-extra
+  - cmake
+  - ninja-build
+  - pkgconf-pkg-config
+  - openssl-devel
+  - gdb
+  - lldb
+
+fedora_language_packages:
+  - neovim
+  - golang
+  - nodejs22
+  - nodejs22-npm
+  - python3
+  - python3-pip
+  - uv
+  - rustup
+
+fedora_container_packages:
+  - podman
+  - buildah
+  - podman-compose
+
+fedora_desktop_packages:
+  - ghostty
+  - cursor
+  - 1password
+  - 1password-cli
+
+nerd_font_version: "3.4.0"
+nerd_font_jetbrains_mono_sha256: "76f05ff3ace48a464a6ca57977998784ff7bdbb65a6d915d7e401cd3927c493c"
+pnpm_version: "11.11.0"
+starship_version: "1.26.0"
+starship_release_base_url: https://github.com/starship/starship/releases/download
+starship_targets:
+  x86_64: x86_64-unknown-linux-musl
+  aarch64: aarch64-unknown-linux-musl
+
+# Long fingerprints are verified before repository keys enter the RPM database.
+fedora_repository_keys:
+  - name: RPM Fusion Free
+    url: "https://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-free-fedora-2020"
+    fingerprint: E9A491A3DE247814E7E067EAE06F8ECDD651FF2E
+  - name: RPM Fusion Nonfree
+    url: "https://rpmfusion.org/keys?action=AttachFile&do=get&target=RPM-GPG-KEY-rpmfusion-nonfree-fedora-2020"
+    fingerprint: 79BDB88F9BBF73910FD4095B6A2AF96194843C65
+  - name: Ghostty COPR
+    url: https://download.copr.fedorainfracloud.org/results/scottames/ghostty/pubkey.gpg
+    fingerprint: 2DEFB319CCC3F393B6DAEAB297C83CA0FEB5DAFB
+  - name: Cursor
+    url: https://downloads.cursor.com/keys/anysphere.asc
+    fingerprint: 380FF4BCDC34A4BD92A3565342A1772E62E492D6
+  - name: 1Password
+    url: https://downloads.1password.com/linux/keys/1password.asc
+    fingerprint: 3FEF9748469ADBE15DA7CA80AC2D62742012EA22

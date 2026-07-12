@@ -1,0 +1,67 @@
+---
+- name: Configure development workstation
+  hosts: workstation
+  gather_facts: true
+
+  pre_tasks:
+    - name: Require the currently supported platform
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.system == "Linux"
+          - ansible_facts.distribution == "Fedora"
+        fail_msg: >-
+          This repository currently implements Fedora only. Detected
+          {{ ansible_facts.system }} / {{ ansible_facts.distribution }}.
+      tags: [always]
+
+    - name: Load Fedora package mapping
+      ansible.builtin.include_vars: vars/Fedora.yml
+      tags: [always]
+
+  tasks:
+    - name: Configure software repositories
+      ansible.builtin.include_tasks:
+        file: tasks/repositories.yml
+        apply:
+          tags: [repositories]
+      tags: [repositories]
+
+    - name: Install workstation packages
+      ansible.builtin.include_tasks:
+        file: tasks/packages.yml
+        apply:
+          tags: [packages]
+      tags: [packages]
+
+    - name: Configure developer runtimes
+      ansible.builtin.include_tasks:
+        file: tasks/runtimes.yml
+        apply:
+          tags: [runtimes]
+      tags: [runtimes]
+
+    - name: Install user fonts
+      ansible.builtin.include_tasks:
+        file: tasks/fonts.yml
+        apply:
+          tags: [fonts]
+      tags: [fonts]
+
+    - name: Link portable application configuration
+      ansible.builtin.include_tasks:
+        file: tasks/dotfiles.yml
+        apply:
+          tags: [dotfiles]
+      tags: [dotfiles]
+
+    - name: Configure NVIDIA graphics explicitly
+      ansible.builtin.include_tasks:
+        file: tasks/nvidia.yml
+        apply:
+          tags: [nvidia]
+      tags: [never, nvidia]
+
+  handlers:
+    - name: Refresh font cache
+      ansible.builtin.command: fc-cache --force
+      changed_when: true

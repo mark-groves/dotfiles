@@ -1,0 +1,15 @@
+---
+- name: Validate dotfile links without changing them
+  ansible.builtin.command:
+    argv:
+      - "{{ playbook_dir }}/../scripts/stow.sh"
+      - --dry-run
+  changed_when: false
+
+- name: Link portable dotfile packages
+  ansible.builtin.command:
+    argv:
+      - "{{ playbook_dir }}/../scripts/stow.sh"
+      - --verbose
+  register: stow_result
+  changed_when: "'LINK:' in stow_result.stderr or 'UNLINK:' in stow_result.stderr"

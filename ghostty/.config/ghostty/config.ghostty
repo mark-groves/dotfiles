@@ -1,0 +1,13 @@
+# Keep terminal glyphs consistent across Ghostty, Neovim, and GUI editors.
+font-family = JetBrainsMono Nerd Font Mono
+font-size = 12
+
+# Follow the desktop's light/dark appearance automatically.
+theme = dark:Catppuccin Frappe,light:Catppuccin Latte
+
+window-padding-x = 8
+window-padding-y = 6
+window-padding-balance = true
+
+# Protect terminals that still have a running process.
+confirm-close-surface = true

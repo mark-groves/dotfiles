@@ -1,0 +1,56 @@
+---
+- name: Import repository keys after verifying full fingerprints
+  ansible.builtin.rpm_key:
+    key: "{{ item.url }}"
+    fingerprint:
+      - "{{ item.fingerprint }}"
+    state: present
+  loop: "{{ fedora_repository_keys }}"
+  loop_control:
+    label: "{{ item.name }}"
+  become: true
+
+- name: Install RPM Fusion repository packages
+  ansible.builtin.dnf:
+    name:
+      - "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_facts.distribution_major_version }}.noarch.rpm"
+      - "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-{{ ansible_facts.distribution_major_version }}.noarch.rpm"
+    state: present
+    disable_gpg_check: false
+  become: true
+
+- name: Configure Ghostty COPR repository
+  ansible.builtin.yum_repository:
+    name: copr:copr.fedorainfracloud.org:scottames:ghostty
+    file: _copr:copr.fedorainfracloud.org:scottames:ghostty
+    description: Copr repo for Ghostty owned by scottames
+    baseurl: >-
+      https://download.copr.fedorainfracloud.org/results/scottames/ghostty/fedora-$releasever-$basearch/
+    enabled: true
+    gpgcheck: true
+    repo_gpgcheck: false
+    gpgkey: https://download.copr.fedorainfracloud.org/results/scottames/ghostty/pubkey.gpg
+    skip_if_unavailable: true
+  become: true
+
+- name: Configure Cursor repository
+  ansible.builtin.yum_repository:
+    name: cursor
+    description: Cursor
+    baseurl: https://downloads.cursor.com/yumrepo
+    enabled: true
+    gpgcheck: true
+    repo_gpgcheck: true
+    gpgkey: https://downloads.cursor.com/keys/anysphere.asc
+  become: true
+
+- name: Configure 1Password repository
+  ansible.builtin.yum_repository:
+    name: 1password
+    description: 1Password Stable Channel
+    baseurl: https://downloads.1password.com/linux/rpm/stable/$basearch
+    enabled: true
+    gpgcheck: true
+    repo_gpgcheck: false
+    gpgkey: https://downloads.1password.com/linux/keys/1password.asc
+  become: true

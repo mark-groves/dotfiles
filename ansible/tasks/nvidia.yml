@@ -1,0 +1,18 @@
+---
+- name: Install NVIDIA driver packages from RPM Fusion
+  ansible.builtin.dnf:
+    name:
+      - akmod-nvidia
+      - xorg-x11-drv-nvidia-cuda
+      - xorg-x11-drv-nvidia-power
+      - kernel-devel
+      - kernel-headers
+    state: present
+  become: true
+
+- name: Explain the required NVIDIA follow-up
+  ansible.builtin.debug:
+    msg: >-
+      NVIDIA packages are installed. Allow akmods to finish building the kernel
+      module before rebooting, then verify with nvidia-smi. This playbook does
+      not reboot automatically.

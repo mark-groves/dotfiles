@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# 1Password installs its SSH signing helper in different locations by platform.
+case "$(uname -s)" in
+  Linux)
+    helper=/opt/1Password/op-ssh-sign
+    ;;
+  Darwin)
+    helper='/Applications/1Password.app/Contents/MacOS/op-ssh-sign'
+    ;;
+  *)
+    printf 'Unsupported platform for 1Password SSH signing: %s\n' "$(uname -s)" >&2
+    exit 1
+    ;;
+esac
+
+[[ -x "$helper" ]] || {
+  printf '1Password SSH signing helper is unavailable: %s\n' "$helper" >&2
+  exit 1
+}
+
+exec "$helper" "$@"
