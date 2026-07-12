@@ -12,6 +12,7 @@ fedora_base_packages:
   - bat
   - jq
   - yq
+  - unzip
   - direnv
   - ShellCheck
   - shfmt

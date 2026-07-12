@@ -14,6 +14,8 @@ cd "$repo_root"
 # shellcheck source=/dev/null
 source /etc/os-release
 [[ "${ID:-}" == fedora ]] || die "only Fedora is implemented currently; detected ${PRETTY_NAME:-unknown}"
+[[ ! -e /run/ostree-booted ]] ||
+  die "immutable Fedora variants are not supported; use a mutable Fedora installation"
 [[ ${EUID:-$(id -u)} -ne 0 ]] || die "run bootstrap as your normal user, not root"
 
 missing_packages=()
