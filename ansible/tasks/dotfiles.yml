@@ -6,6 +6,7 @@
       - --dry-run
       - --restow
   changed_when: false
+  check_mode: false
 
 - name: Link portable dotfile packages
   ansible.builtin.command:

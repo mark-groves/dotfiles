@@ -5,11 +5,13 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
 
 printf 'Checking shell syntax...\n'
-bash -n bootstrap.sh scripts/stow.sh scripts/check.sh shell/.local/bin/op-ssh-sign
+bash -n bootstrap.sh scripts/stow.sh scripts/check.sh shell/.local/bin/op-ssh-sign \
+  shell/.bashrc.d/*.sh
 
 if command -v shellcheck >/dev/null 2>&1; then
   printf 'Running ShellCheck...\n'
   shellcheck bootstrap.sh scripts/stow.sh scripts/check.sh shell/.local/bin/op-ssh-sign
+  shellcheck --shell=bash shell/.bashrc.d/*.sh
 else
   printf 'Skipping ShellCheck (not installed).\n'
 fi
