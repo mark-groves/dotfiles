@@ -65,6 +65,9 @@ remove_obsolete_links() {
   local -a migrations=(
     "$HOME/.gitconfig|$root/git/.gitconfig"
     "$HOME/.config/ghostty/config.ghostty|$root/ghostty/.config/ghostty/config.ghostty"
+    "$HOME/.config/ghostty/config|$root/ghostty/.config/ghostty/config.ghostty"
+    "$HOME/.local/bin/gh-credential|$root/shell/.local/bin/gh-credential"
+    "$HOME/.local/bin/op-ssh-sign|$root/shell/.local/bin/op-ssh-sign"
   )
 
   for migration in "${migrations[@]}"; do
@@ -76,10 +79,16 @@ remove_obsolete_links() {
   done
 }
 
+bashrc_sources_fragments() {
+  local bashrc="$1"
+  [[ -r "$bashrc" ]] || return 1
+  grep -Eq '(\$\{?HOME\}?|~)/\.bashrc\.d' "$bashrc"
+}
+
 stow_base() {
   local root="$1" dry_run="$2" verbose="$3"
   shift 3
-  local -a packages=("$@") stow_args failed=()
+  local -a packages=("$@") stow_args package_args failed=()
   local package
 
   stow_args=(--dir "$root" --target "$HOME" --restow --no-folding)
@@ -103,7 +112,19 @@ stow_base() {
     }
 
     printf 'Stowing %s\n' "$package"
-    stow "${stow_args[@]}" "$package" || failed+=("$package")
+    package_args=("${stow_args[@]}")
+    if [[ "$package" == shell && (-e "$HOME/.bashrc" || -L "$HOME/.bashrc") ]] &&
+      ! link_points_to "$HOME/.bashrc" "$root/shell/.bashrc"; then
+      if bashrc_sources_fragments "$HOME/.bashrc"; then
+        printf 'Keeping existing .bashrc (it already loads ~/.bashrc.d).\n'
+        package_args+=(--ignore='^\.bashrc$')
+      else
+        printf 'Error: existing .bashrc does not load ~/.bashrc.d: %s\n' "$HOME/.bashrc" >&2
+        failed+=("$package")
+        continue
+      fi
+    fi
+    stow "${package_args[@]}" "$package" || failed+=("$package")
   done
 
   [[ ${#failed[@]} -eq 0 ]] || die "failed Stow packages: ${failed[*]}"

@@ -13,9 +13,11 @@ policy, and system tuning—belongs in a separate repository.
 
 ## Managed configuration
 
-The default Stow deployment includes Git, Ghostty, Neovim/LazyVim, additive
-Bash fragments, tmux, and Starship. Package contents mirror paths relative to
-`$HOME`.
+The default Stow deployment includes Git, Ghostty, Neovim/LazyVim, Bash, tmux,
+and Starship. Package contents mirror paths relative to `$HOME`. The managed
+Bash startup file loads additive fragments from `~/.bashrc.d`. If an existing
+`~/.bashrc` already loads that directory, deployment preserves it; otherwise
+Stow stops instead of replacing personal shell startup commands.
 
 The Fedora package profile installs the core command-line applications and
 utilities available from the configured DNF repositories on mutable Fedora

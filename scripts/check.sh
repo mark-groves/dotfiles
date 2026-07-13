@@ -5,22 +5,22 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
 
 mapfile -d '' shell_scripts < <(find scripts -type f -name '*.sh' -print0)
-mapfile -d '' shell_bins < <(find shell/.local/bin -type f -print0)
+mapfile -d '' git_bins < <(find git/.local/bin -type f -print0)
 mapfile -d '' bash_fragments < <(find shell/.bashrc.d -type f -name '*.sh' -print0)
 
 printf 'Checking shell syntax...\n'
-bash -n bootstrap.sh "${shell_scripts[@]}" "${shell_bins[@]}" "${bash_fragments[@]}"
+bash -n bootstrap.sh shell/.bashrc "${shell_scripts[@]}" "${git_bins[@]}" "${bash_fragments[@]}"
 
 if command -v shellcheck > /dev/null 2>&1; then
   printf 'Running ShellCheck...\n'
-  shellcheck bootstrap.sh "${shell_scripts[@]}" "${shell_bins[@]}"
-  shellcheck --shell=bash "${bash_fragments[@]}"
+  shellcheck bootstrap.sh "${shell_scripts[@]}" "${git_bins[@]}"
+  shellcheck --shell=bash shell/.bashrc "${bash_fragments[@]}"
 else
   printf 'Skipping ShellCheck (not installed).\n'
 fi
 
 printf 'Checking executable scripts...\n'
-for script in bootstrap.sh scripts/stow.sh scripts/install-packages.sh scripts/package-providers/*.sh; do
+for script in bootstrap.sh scripts/stow.sh scripts/install-packages.sh scripts/package-providers/*.sh "${git_bins[@]}"; do
   [[ -x "$script" ]] || {
     printf 'Script is not executable: %s\n' "$script" >&2
     exit 1
