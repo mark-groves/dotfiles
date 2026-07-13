@@ -53,25 +53,56 @@ load_default_packages() {
   [[ ${#default_packages[@]} -gt 0 ]] || die "Stow package manifest is empty: $manifest"
 }
 
+normalize_path() {
+  local path="$1" part
+  local -a parts normalized=()
+  IFS='/' read -r -a parts <<< "$path"
+  for part in "${parts[@]}"; do
+    case "$part" in
+      '' | .) ;;
+      ..)
+        [[ ${#normalized[@]} -eq 0 ]] || unset "normalized[$((${#normalized[@]} - 1))]"
+        ;;
+      *) normalized+=("$part") ;;
+    esac
+  done
+  printf '/%s' "$(
+    IFS=/
+    printf '%s' "${normalized[*]}"
+  )"
+}
+
 link_points_to() {
-  local link="$1" expected="$2"
+  local link="$1" expected="$2" target
   [[ -L "$link" ]] || return 1
-  command -v realpath > /dev/null 2>&1 || return 1
-  [[ "$(realpath --canonicalize-missing -- "$link")" == "$expected" ]]
+  target="$(readlink "$link")" || return 1
+  [[ "$target" == /* ]] || target="$(dirname "$link")/$target"
+  [[ "$(normalize_path "$target")" == "$(normalize_path "$expected")" ]]
+}
+
+package_selected() {
+  local requested="$1" package
+  shift
+  for package in "$@"; do
+    [[ "$package" != "$requested" ]] || return 0
+  done
+  return 1
 }
 
 remove_obsolete_links() {
-  local root="$1" dry_run="$2" link expected
+  local root="$1" dry_run="$2" owner link expected
+  shift 2
   local -a migrations=(
-    "$HOME/.gitconfig|$root/git/.gitconfig"
-    "$HOME/.config/ghostty/config.ghostty|$root/ghostty/.config/ghostty/config.ghostty"
-    "$HOME/.config/ghostty/config|$root/ghostty/.config/ghostty/config.ghostty"
-    "$HOME/.local/bin/gh-credential|$root/shell/.local/bin/gh-credential"
-    "$HOME/.local/bin/op-ssh-sign|$root/shell/.local/bin/op-ssh-sign"
+    "git|$HOME/.gitconfig|$root/git/.gitconfig"
+    "ghostty|$HOME/.config/ghostty/config.ghostty|$root/ghostty/.config/ghostty/config.ghostty"
+    "ghostty|$HOME/.config/ghostty/config|$root/ghostty/.config/ghostty/config.ghostty"
+    "git|$HOME/.local/bin/gh-credential|$root/shell/.local/bin/gh-credential"
+    "git|$HOME/.local/bin/op-ssh-sign|$root/shell/.local/bin/op-ssh-sign"
   )
 
   for migration in "${migrations[@]}"; do
-    IFS='|' read -r link expected <<< "$migration"
+    IFS='|' read -r owner link expected <<< "$migration"
+    package_selected "$owner" "$@" || continue
     if link_points_to "$link" "$expected"; then
       printf 'UNLINK: %s (obsolete dotfile path)\n' "$link"
       "$dry_run" || rm -- "$link"
@@ -82,7 +113,7 @@ remove_obsolete_links() {
 bashrc_sources_fragments() {
   local bashrc="$1"
   [[ -r "$bashrc" ]] || return 1
-  grep -Eq '(\$\{?HOME\}?|~)/\.bashrc\.d' "$bashrc"
+  grep -Eq '(~|"?\$\{?HOME\}?"?)/\.bashrc\.d' "$bashrc"
 }
 
 stow_base() {
@@ -95,7 +126,7 @@ stow_base() {
   "$dry_run" && stow_args+=(--simulate)
   "$verbose" && stow_args+=(--verbose=2)
 
-  remove_obsolete_links "$root" "$dry_run"
+  remove_obsolete_links "$root" "$dry_run" "${packages[@]}"
   printf 'Target: %s\n' "$HOME"
   "$dry_run" && printf 'Mode: dry-run\n'
 

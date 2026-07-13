@@ -2,6 +2,7 @@
 git
 git-lfs
 github-cli
+c-compiler
 neovim
 stow
 tmux
