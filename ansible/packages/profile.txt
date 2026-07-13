@@ -1,0 +1,18 @@
+# Stable application identifiers for the default portable command-line profile.
+git
+git-lfs
+github-cli
+neovim
+stow
+tmux
+direnv
+ripgrep
+fd
+fzf
+bat
+jq
+yq
+unzip
+shellcheck
+shfmt
+clipboard

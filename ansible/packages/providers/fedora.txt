@@ -1,0 +1,18 @@
+# logical-id       Fedora package name
+git                git
+git-lfs            git-lfs
+github-cli         gh
+neovim             neovim
+stow               stow
+tmux               tmux
+direnv              direnv
+ripgrep             ripgrep
+fd                  fd-find
+fzf                 fzf
+bat                 bat
+jq                  jq
+yq                  yq
+unzip               unzip
+shellcheck          ShellCheck
+shfmt               shfmt
+clipboard           wl-clipboard

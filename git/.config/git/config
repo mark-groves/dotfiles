@@ -1,10 +1,12 @@
-# See https://git-scm.com/docs/git-config
+# Portable Git defaults. Secrets and authentication tokens do not belong here.
 
 [alias]
 	co = checkout
 	sw = switch
 	br = branch
 	ci = commit
+	# Personal, explicitly signed commit. Ordinary/agent commits remain unattended.
+	cis = commit -S
 	st = status
 [init]
 	defaultBranch = main
@@ -22,7 +24,7 @@
 	mnemonicPrefix = true    # More intuitive refs in diff output
 [commit]
 	verbose = true           # Include diff comment in commit message template
-	gpgsign = true
+	gpgSign = false
 [column]
 	ui = auto 			     # Output in columns when possible
 [branch]
@@ -39,10 +41,15 @@
 [gpg]
 	format = ssh
 [gpg "ssh"]
-	program = "/opt/1Password/op-ssh-sign"
+	program = ~/.local/bin/op-ssh-sign
 [credential "https://github.com"]
 	helper = 
-	helper = !/usr/bin/gh auth git-credential
+	helper = !~/.local/bin/gh-credential
 [credential "https://gist.github.com"]
 	helper = 
-	helper = !/usr/bin/gh auth git-credential
+	helper = !~/.local/bin/gh-credential
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
