@@ -2,223 +2,300 @@
 set -euo pipefail
 
 usage() {
-  cat <<EOF
-Usage: $(basename "$0") <command> [options]
+  cat << 'EOF'
+Usage: stow.sh <command> [options] [package ...]
 
 Commands:
-  base                  Stow all base packages
-  host [hostname]       Stow host-specific packages (default: current hostname)
+  base                  Deploy portable packages from stow-packages.txt
+  host [hostname]       Deploy host-specific packages (default: this host)
+  list                  List the default portable packages without deploying
   help                  Show this help message
 
 Options:
-  -n, --dry-run         Show what would be stowed without making changes
+  -n, --dry-run         Preview changes without modifying links
+  -v, --verbose         Show detailed GNU Stow output
 
 Examples:
-  $(basename "$0") base
-  $(basename "$0") base -n
-  $(basename "$0") host
-  $(basename "$0") host nexus-unbound
+  ./scripts/stow.sh base --dry-run
+  ./scripts/stow.sh base
+  ./scripts/stow.sh base git ghostty
+  ./scripts/stow.sh host
 EOF
 }
 
-require_stow() {
-  command -v stow >/dev/null 2>&1 || {
-    echo "Error: stow is required but not installed. Please install it and retry."
-    exit 1
-  }
+die() {
+  printf 'Error: %s\n' "$*" >&2
+  exit 1
 }
 
-resolve_repo_root() {
-  local repo_root
-  repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-  echo "$repo_root"
+repo_root() {
+  cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd
 }
 
-discover_base_packages() {
-  local -a packages=()
-  
-  while IFS= read -r -d '' dir; do
-    pkg="${dir#.}"
-    pkg="${pkg#/}"
-    packages+=("$pkg")
-  done < <(find . -maxdepth 1 -mindepth 1 -type d \
-    -not -path './.git*' \
-    -not -path './.claude' \
-    -not -path './scripts' \
-    -not -path './hosts' \
-    -print0)
-  
-  printf '%s\n' "${packages[@]}"
+valid_name() {
+  [[ "$1" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]
 }
 
-discover_host_packages() {
-  local hostname="$1"
-  local host_dir="hosts/$hostname"
-  local -a packages=()
-  
-  if [[ ! -d "$host_dir" ]]; then
-    echo "Error: Host package directory not found: $host_dir" >&2
-    exit 1
-  fi
-  
-  while IFS= read -r -d '' dir; do
-    # Only include directories that contain actual files (not just subdirs)
-    if find "$dir" -type f -print -quit | grep -q .; then
-      pkg="${dir#./}"
-      packages+=("$pkg")
+load_default_packages() {
+  local manifest="$1" line package extra
+  [[ -f "$manifest" ]] || die "Stow package manifest not found: $manifest"
+
+  default_packages=()
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line%%#*}"
+    read -r package extra <<< "$line"
+    [[ -n "${package:-}" ]] || continue
+    [[ -z "${extra:-}" ]] || die "expected one Stow package per line in $manifest"
+    valid_name "$package" || die "invalid Stow package name in $manifest: $package"
+    default_packages+=("$package")
+  done < "$manifest"
+
+  [[ ${#default_packages[@]} -gt 0 ]] || die "Stow package manifest is empty: $manifest"
+}
+
+normalize_path() {
+  local path="$1" part
+  local -a parts normalized=()
+  IFS='/' read -r -a parts <<< "$path"
+  for part in "${parts[@]}"; do
+    case "$part" in
+      '' | .) ;;
+      ..)
+        [[ ${#normalized[@]} -eq 0 ]] || unset "normalized[$((${#normalized[@]} - 1))]"
+        ;;
+      *) normalized+=("$part") ;;
+    esac
+  done
+  printf '/%s' "$(
+    IFS=/
+    printf '%s' "${normalized[*]}"
+  )"
+}
+
+link_points_to() {
+  local link="$1" expected="$2" target
+  [[ -L "$link" ]] || return 1
+  target="$(readlink "$link")" || return 1
+  [[ "$target" == /* ]] || target="$(dirname "$link")/$target"
+  [[ "$(normalize_path "$target")" == "$(normalize_path "$expected")" ]]
+}
+
+package_selected() {
+  local requested="$1" package
+  shift
+  for package in "$@"; do
+    [[ "$package" != "$requested" ]] || return 0
+  done
+  return 1
+}
+
+remove_obsolete_links() {
+  local root="$1" dry_run="$2" owner link expected replacement
+  shift 2
+  planned_ignores=()
+  local -a migrations=(
+    "git|$HOME/.gitconfig|$root/git/.gitconfig"
+    "ghostty|$HOME/.config/ghostty/config.ghostty|$root/ghostty/.config/ghostty/config.ghostty"
+    "ghostty|$HOME/.config/ghostty/config|$root/ghostty/.config/ghostty/config.ghostty|^\\.config/ghostty/config$"
+    "git|$HOME/.local/bin/gh-credential|$root/shell/.local/bin/gh-credential|^\\.local/bin/gh-credential$"
+    "git|$HOME/.local/bin/op-ssh-sign|$root/shell/.local/bin/op-ssh-sign"
+    "git|$HOME/.local/bin/op-ssh-sign|$root/git/.local/bin/op-ssh-sign"
+  )
+
+  for migration in "${migrations[@]}"; do
+    IFS='|' read -r owner link expected replacement <<< "$migration"
+    package_selected "$owner" "$@" || continue
+    if link_points_to "$link" "$expected"; then
+      printf 'UNLINK: %s (obsolete dotfile path)\n' "$link"
+      if "$dry_run"; then
+        if [[ -n "${replacement:-}" ]]; then
+          printf 'RELINK: %s (during %s deployment)\n' "$link" "$owner"
+          planned_ignores+=("$owner|$replacement")
+        fi
+      else
+        rm -- "$link"
+      fi
     fi
-  done < <(find "./$host_dir" -maxdepth 1 -mindepth 1 -type d -print0)
-  
-  printf '%s\n' "${packages[@]}"
+  done
+}
+
+bashrc_sources_fragments() {
+  local bashrc="$1"
+  [[ -r "$bashrc" ]] || return 1
+  awk '
+    /^[[:space:]]*#/ { next }
+    $1 == "for" && $3 == "in" && $0 ~ /bashrc\.d\/\*(\.sh)?([;"[:space:]]|$)/ {
+      loop_variable = $2
+    }
+    $1 == "." || $1 == "source" {
+      argument = $2
+      gsub(/^"|"$/, "", argument)
+      if (loop_variable != "" && argument == "$" loop_variable) {
+        found = 1
+      }
+    }
+    $1 == "done" { loop_variable = "" }
+    END { exit found ? 0 : 1 }
+  ' "$bashrc"
+}
+
+dry_run_requested() {
+  local argument
+  for argument in "$@"; do
+    case "$argument" in
+      -n | --dry-run) return 0 ;;
+    esac
+  done
+  return 1
+}
+
+stow_base() {
+  local root="$1" dry_run="$2" verbose="$3"
+  shift 3
+  local -a packages=("$@") stow_args package_args failed=()
+  local package planned_ignore migration_owner ignore
+
+  stow_args=(--dir "$root" --target "$HOME" --restow --no-folding)
+  "$dry_run" && stow_args+=(--simulate)
+  "$verbose" && stow_args+=(--verbose=2)
+
+  remove_obsolete_links "$root" "$dry_run" "${packages[@]}"
+  printf 'Target: %s\n' "$HOME"
+  "$dry_run" && printf 'Mode: dry-run\n'
+
+  for package in "${packages[@]}"; do
+    valid_name "$package" || {
+      printf 'Error: invalid Stow package name: %s\n' "$package" >&2
+      failed+=("$package")
+      continue
+    }
+    [[ -d "$root/$package" ]] || {
+      printf 'Error: Stow package directory does not exist: %s\n' "$package" >&2
+      failed+=("$package")
+      continue
+    }
+
+    printf 'Stowing %s\n' "$package"
+    package_args=("${stow_args[@]}")
+    for planned_ignore in "${planned_ignores[@]}"; do
+      IFS='|' read -r migration_owner ignore <<< "$planned_ignore"
+      [[ "$migration_owner" != "$package" ]] || package_args+=(--ignore="$ignore")
+    done
+    if [[ "$package" == shell && (-e "$HOME/.bashrc" || -L "$HOME/.bashrc") ]] &&
+      ! link_points_to "$HOME/.bashrc" "$root/shell/.bashrc"; then
+      if bashrc_sources_fragments "$HOME/.bashrc"; then
+        printf 'Keeping existing .bashrc (it already loads ~/.bashrc.d).\n'
+        package_args+=(--ignore='^\.bashrc$')
+      else
+        printf 'Error: existing .bashrc does not load ~/.bashrc.d: %s\n' "$HOME/.bashrc" >&2
+        failed+=("$package")
+        continue
+      fi
+    fi
+    stow "${package_args[@]}" "$package" || failed+=("$package")
+  done
+
+  [[ ${#failed[@]} -eq 0 ]] || die "failed Stow packages: ${failed[*]}"
+  printf 'Done.\n'
 }
 
 cmd_base() {
-  local repo_root dry_run=false
-  
+  local root dry_run=false verbose=false
+  local -a packages=()
+  root="$(repo_root)"
+
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      -n|--dry-run)
-        dry_run=true
-        ;;
-      *)
-        echo "Error: unknown option '$1' for base command" >&2
-        exit 1
-        ;;
+      -n | --dry-run) dry_run=true ;;
+      -v | --verbose) verbose=true ;;
+      -*) die "unknown base option: $1" ;;
+      *) packages+=("$1") ;;
     esac
     shift
   done
-  
-  repo_root="$(resolve_repo_root)"
-  cd "$repo_root"
-  
-  mapfile -t packages < <(discover_base_packages)
-  
-  if [[ ${#packages[@]} -eq 0 || -z "${packages[0]:-}" ]]; then
-    echo "No stow packages found."
-    exit 1
-  fi
-  
-  echo "Stowing base packages: ${packages[*]}"
-  
-  local -a failed=()
-  local -a stow_args=()
-  for pkg in "${packages[@]}"; do
-    stow_args=(-t "$HOME" --restow --no-folding)
-    [[ "$dry_run" == true ]] && stow_args+=(-n)
-    stow_args+=("$pkg")
 
-    echo "  $pkg"
-    if ! stow "${stow_args[@]}"; then
-      failed+=("$pkg")
-    fi
-  done
-  
-  handle_results packages failed
+  if [[ ${#packages[@]} -eq 0 ]]; then
+    load_default_packages "$root/stow-packages.txt"
+    packages=("${default_packages[@]}")
+  fi
+
+  stow_base "$root" "$dry_run" "$verbose" "${packages[@]}"
+}
+
+cmd_list() {
+  local root
+  root="$(repo_root)"
+  load_default_packages "$root/stow-packages.txt"
+  printf '%s\n' "${default_packages[@]}"
 }
 
 cmd_host() {
-  local repo_root dry_run=false hostname=""
-  
+  local root hostname="" dry_run=false verbose=false host_dir
+  local -a packages=() stow_args=() failed=()
+  local dir package
+  root="$(repo_root)"
+
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      -n|--dry-run)
-        dry_run=true
-        ;;
-      -*)
-        echo "Error: unknown option '$1' for host command" >&2
-        exit 1
-        ;;
+      -n | --dry-run) dry_run=true ;;
+      -v | --verbose) verbose=true ;;
+      -*) die "unknown host option: $1" ;;
       *)
-        if [[ -z "$hostname" ]]; then
-          hostname="$1"
-        else
-          echo "Error: unexpected argument '$1'" >&2
-          exit 1
-        fi
+        [[ -z "$hostname" ]] || die "unexpected host argument: $1"
+        hostname="$1"
         ;;
     esac
     shift
   done
-  
-  [[ -z "$hostname" ]] && hostname="$(hostname)"
-  
-  repo_root="$(resolve_repo_root)"
-  cd "$repo_root"
-  
-  mapfile -t packages < <(discover_host_packages "$hostname")
-  
-  if [[ ${#packages[@]} -eq 0 || -z "${packages[0]:-}" ]]; then
-    echo "No valid host packages found for: $hostname"
-    exit 1
-  fi
-  
-  echo "Stowing host packages for '$hostname': ${packages[*]}"
-  
-  local -a failed=()
-  local -a stow_args=()
-  local pkg_dir pkg_name
-  for pkg in "${packages[@]}"; do
-    stow_args=(-t "$HOME" --restow --no-folding)
 
-    # For host packages, use -d to specify the package directory
-    # since package names can't contain slashes
-    pkg_dir="${pkg%/*}"   # e.g., hosts/nexus-unbound
-    pkg_name="${pkg##*/}" # e.g., hypr
-    [[ "$dry_run" == true ]] && stow_args+=(-n)
-    stow_args+=(-d "$pkg_dir" "$pkg_name")
-    
-    echo "  $pkg_name"
-    if ! stow "${stow_args[@]}"; then
-      failed+=("$pkg")
-    fi
+  [[ -n "$hostname" ]] || hostname="$(hostname)"
+  valid_name "$hostname" || die "invalid hostname: $hostname"
+  host_dir="$root/hosts/$hostname"
+  [[ -d "$host_dir" ]] || die "host package directory not found: $host_dir"
+
+  while IFS= read -r -d '' dir; do
+    [[ -n "$(find "$dir" -type f -print -quit)" ]] || continue
+    packages+=("${dir##*/}")
+  done < <(find "$host_dir" -mindepth 1 -maxdepth 1 -type d -print0)
+
+  [[ ${#packages[@]} -gt 0 ]] || die "no host packages found for: $hostname"
+  stow_args=(--dir "$host_dir" --target "$HOME" --restow --no-folding)
+  "$dry_run" && stow_args+=(--simulate)
+  "$verbose" && stow_args+=(--verbose=2)
+
+  printf 'Target: %s\n' "$HOME"
+  "$dry_run" && printf 'Mode: dry-run\n'
+  for package in "${packages[@]}"; do
+    printf 'Stowing host package %s/%s\n' "$hostname" "$package"
+    stow "${stow_args[@]}" "$package" || failed+=("$package")
   done
-  
-  handle_results packages failed
-}
 
-handle_results() {
-  local -n _packages="$1"
-  local -n _failed="$2"
-  
-  # Exit non-zero only if ALL packages failed
-  if [[ ${#_failed[@]} -eq ${#_packages[@]} && ${#_packages[@]} -gt 0 ]]; then
-    echo "Error: all packages failed to stow"
-    exit 1
-  fi
-  
-  if [[ ${#_failed[@]} -gt 0 ]]; then
-    echo "Warning: failed to stow: ${_failed[*]}"
-  else
-    echo "Done."
-  fi
+  [[ ${#failed[@]} -eq 0 ]] || die "failed host Stow packages: ${failed[*]}"
+  printf 'Done.\n'
 }
 
 main() {
-  require_stow
-  
-  [[ $# -eq 0 ]] && {
+  [[ $# -gt 0 ]] || {
     usage
     exit 1
   }
-  
-  local cmd="$1"
+
+  local command="$1"
   shift
-  
-  case "$cmd" in
-    base)
-      cmd_base "$@"
+  case "$command" in
+    help | -h | --help) usage ;;
+    list)
+      [[ $# -eq 0 ]] || die "list does not accept arguments"
+      cmd_list
       ;;
-    host)
-      cmd_host "$@"
+    base | host)
+      if [[ ${EUID:-$(id -u)} -eq 0 ]] && ! dry_run_requested "$@"; then
+        die "do not run Stow as root or with sudo"
+      fi
+      command -v stow > /dev/null 2>&1 || die "GNU Stow is required; run ./bootstrap.sh --packages-only first"
+      "cmd_$command" "$@"
       ;;
-    help|--help|-h)
-      usage
-      ;;
-    *)
-      echo "Error: unknown command '$cmd'" >&2
-      usage
-      exit 1
-      ;;
+    *) die "unknown command: $command" ;;
   esac
 }
 

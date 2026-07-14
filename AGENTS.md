@@ -1,8 +1,8 @@
 # Project Instructions
 
-- When repairing symlinks for dotfiles in this project use @scripts/stow.sh
-
-## Git Workflow
-
-- Never commit directly to main. Always create a branch, commit there, push, and open a PR if one doesn't already exist for that branch.
-- Use conventional commit messages. Body should be in list format and not overly verbose.
+- Use `scripts/stow.sh` for dotfile deployment and symlink repair.
+- Run `scripts/check.sh` before committing implementation changes.
+- Keep application configuration portable. Put OS package names and system
+  provisioning only under `ansible/`.
+- Never commit secrets, resolved 1Password references, access tokens, or private
+  keys.

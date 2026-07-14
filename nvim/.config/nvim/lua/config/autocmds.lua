@@ -1,0 +1,1 @@
+-- Add portable autocmds here. LazyVim's defaults are loaded automatically.

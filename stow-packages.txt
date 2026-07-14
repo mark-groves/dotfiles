@@ -1,0 +1,7 @@
+# Portable application configuration packages, in deployment order.
+git
+ghostty
+nvim
+shell
+tmux
+starship
