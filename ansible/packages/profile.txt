@@ -9,6 +9,9 @@ tree-sitter-cli
 nodejs
 npm
 go
+rust
+cargo
+rust-analyzer
 neovim
 stow
 tmux

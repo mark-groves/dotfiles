@@ -124,7 +124,9 @@ bashrc_sources_fragments() {
   [[ -r "$bashrc" ]] || return 1
   awk '
     /^[[:space:]]*#/ { next }
-    $1 == "for" && $3 == "in" && $0 ~ /bashrc\.d/ { loop_variable = $2 }
+    $1 == "for" && $3 == "in" && $0 ~ /bashrc\.d\/\*(\.sh)?([;"[:space:]]|$)/ {
+      loop_variable = $2
+    }
     $1 == "." || $1 == "source" {
       argument = $2
       gsub(/^"|"$/, "", argument)
