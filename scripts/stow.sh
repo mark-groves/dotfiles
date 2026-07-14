@@ -128,10 +128,11 @@ bashrc_sources_fragments() {
     $1 == "." || $1 == "source" {
       argument = $2
       gsub(/^"|"$/, "", argument)
-      if (argument ~ /bashrc\.d/ || (loop_variable != "" && argument == "$" loop_variable)) {
+      if (loop_variable != "" && argument == "$" loop_variable) {
         found = 1
       }
     }
+    $1 == "done" { loop_variable = "" }
     END { exit found ? 0 : 1 }
   ' "$bashrc"
 }

@@ -6,6 +6,9 @@ c-compiler         gcc
 openssh-client      openssh-clients
 curl               curl
 tree-sitter-cli    tree-sitter-cli
+nodejs              nodejs22-bin
+npm                 nodejs22-npm-bin
+go                  golang
 neovim             neovim
 stow               stow
 tmux               tmux
