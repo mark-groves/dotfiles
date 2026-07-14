@@ -3,6 +3,8 @@ git
 git-lfs
 github-cli
 c-compiler
+curl
+tree-sitter-cli
 neovim
 stow
 tmux

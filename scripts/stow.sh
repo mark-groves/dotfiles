@@ -90,22 +90,30 @@ package_selected() {
 }
 
 remove_obsolete_links() {
-  local root="$1" dry_run="$2" owner link expected
+  local root="$1" dry_run="$2" owner link expected replacement
   shift 2
+  planned_ignores=()
   local -a migrations=(
     "git|$HOME/.gitconfig|$root/git/.gitconfig"
     "ghostty|$HOME/.config/ghostty/config.ghostty|$root/ghostty/.config/ghostty/config.ghostty"
-    "ghostty|$HOME/.config/ghostty/config|$root/ghostty/.config/ghostty/config.ghostty"
-    "git|$HOME/.local/bin/gh-credential|$root/shell/.local/bin/gh-credential"
-    "git|$HOME/.local/bin/op-ssh-sign|$root/shell/.local/bin/op-ssh-sign"
+    "ghostty|$HOME/.config/ghostty/config|$root/ghostty/.config/ghostty/config.ghostty|^\\.config/ghostty/config$"
+    "git|$HOME/.local/bin/gh-credential|$root/shell/.local/bin/gh-credential|^\\.local/bin/gh-credential$"
+    "git|$HOME/.local/bin/op-ssh-sign|$root/shell/.local/bin/op-ssh-sign|^\\.local/bin/op-ssh-sign$"
   )
 
   for migration in "${migrations[@]}"; do
-    IFS='|' read -r owner link expected <<< "$migration"
+    IFS='|' read -r owner link expected replacement <<< "$migration"
     package_selected "$owner" "$@" || continue
     if link_points_to "$link" "$expected"; then
       printf 'UNLINK: %s (obsolete dotfile path)\n' "$link"
-      "$dry_run" || rm -- "$link"
+      if "$dry_run"; then
+        if [[ -n "${replacement:-}" ]]; then
+          printf 'RELINK: %s (during %s deployment)\n' "$link" "$owner"
+          planned_ignores+=("$owner|$replacement")
+        fi
+      else
+        rm -- "$link"
+      fi
     fi
   done
 }
@@ -120,7 +128,7 @@ stow_base() {
   local root="$1" dry_run="$2" verbose="$3"
   shift 3
   local -a packages=("$@") stow_args package_args failed=()
-  local package
+  local package planned_ignore migration_owner ignore
 
   stow_args=(--dir "$root" --target "$HOME" --restow --no-folding)
   "$dry_run" && stow_args+=(--simulate)
@@ -144,6 +152,10 @@ stow_base() {
 
     printf 'Stowing %s\n' "$package"
     package_args=("${stow_args[@]}")
+    for planned_ignore in "${planned_ignores[@]}"; do
+      IFS='|' read -r migration_owner ignore <<< "$planned_ignore"
+      [[ "$migration_owner" != "$package" ]] || package_args+=(--ignore="$ignore")
+    done
     if [[ "$package" == shell && (-e "$HOME/.bashrc" || -L "$HOME/.bashrc") ]] &&
       ! link_points_to "$HOME/.bashrc" "$root/shell/.bashrc"; then
       if bashrc_sources_fragments "$HOME/.bashrc"; then
