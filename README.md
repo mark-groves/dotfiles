@@ -91,13 +91,6 @@ Deploy selected portable packages:
 ./scripts/stow.sh base git nvim
 ```
 
-Host-specific configuration remains available when needed:
-
-```bash
-./scripts/stow.sh host
-./scripts/stow.sh host nexus-unbound
-```
-
 `stow-packages.txt` is the source of truth for the default deployment. Keeping
 that allowlist separate prevents infrastructure and documentation directories
 from being mistaken for dotfile packages.

@@ -7,7 +7,6 @@ Usage: stow.sh <command> [options] [package ...]
 
 Commands:
   base                  Deploy portable packages from stow-packages.txt
-  host [hostname]       Deploy host-specific packages (default: this host)
   list                  List the default portable packages without deploying
   help                  Show this help message
 
@@ -19,7 +18,6 @@ Examples:
   ./scripts/stow.sh base --dry-run
   ./scripts/stow.sh base
   ./scripts/stow.sh base git ghostty
-  ./scripts/stow.sh host
 EOF
 }
 
@@ -229,51 +227,6 @@ cmd_list() {
   printf '%s\n' "${default_packages[@]}"
 }
 
-cmd_host() {
-  local root hostname="" dry_run=false verbose=false host_dir
-  local -a packages=() stow_args=() failed=()
-  local dir package
-  root="$(repo_root)"
-
-  while [[ $# -gt 0 ]]; do
-    case "$1" in
-      -n | --dry-run) dry_run=true ;;
-      -v | --verbose) verbose=true ;;
-      -*) die "unknown host option: $1" ;;
-      *)
-        [[ -z "$hostname" ]] || die "unexpected host argument: $1"
-        hostname="$1"
-        ;;
-    esac
-    shift
-  done
-
-  [[ -n "$hostname" ]] || hostname="$(hostname)"
-  valid_name "$hostname" || die "invalid hostname: $hostname"
-  host_dir="$root/hosts/$hostname"
-  [[ -d "$host_dir" ]] || die "host package directory not found: $host_dir"
-
-  while IFS= read -r -d '' dir; do
-    [[ -n "$(find "$dir" -type f -print -quit)" ]] || continue
-    packages+=("${dir##*/}")
-  done < <(find "$host_dir" -mindepth 1 -maxdepth 1 -type d -print0)
-
-  [[ ${#packages[@]} -gt 0 ]] || die "no host packages found for: $hostname"
-  stow_args=(--dir "$host_dir" --target "$HOME" --restow --no-folding)
-  "$dry_run" && stow_args+=(--simulate)
-  "$verbose" && stow_args+=(--verbose=2)
-
-  printf 'Target: %s\n' "$HOME"
-  "$dry_run" && printf 'Mode: dry-run\n'
-  for package in "${packages[@]}"; do
-    printf 'Stowing host package %s/%s\n' "$hostname" "$package"
-    stow "${stow_args[@]}" "$package" || failed+=("$package")
-  done
-
-  [[ ${#failed[@]} -eq 0 ]] || die "failed host Stow packages: ${failed[*]}"
-  printf 'Done.\n'
-}
-
 main() {
   [[ $# -gt 0 ]] || {
     usage
@@ -288,12 +241,12 @@ main() {
       [[ $# -eq 0 ]] || die "list does not accept arguments"
       cmd_list
       ;;
-    base | host)
+    base)
       if [[ ${EUID:-$(id -u)} -eq 0 ]] && ! dry_run_requested "$@"; then
         die "do not run Stow as root or with sudo"
       fi
       command -v stow > /dev/null 2>&1 || die "GNU Stow is required; run ./bootstrap.sh --packages-only first"
-      "cmd_$command" "$@"
+      cmd_base "$@"
       ;;
     *) die "unknown command: $command" ;;
   esac
