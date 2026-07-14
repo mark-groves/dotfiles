@@ -98,7 +98,8 @@ remove_obsolete_links() {
     "ghostty|$HOME/.config/ghostty/config.ghostty|$root/ghostty/.config/ghostty/config.ghostty"
     "ghostty|$HOME/.config/ghostty/config|$root/ghostty/.config/ghostty/config.ghostty|^\\.config/ghostty/config$"
     "git|$HOME/.local/bin/gh-credential|$root/shell/.local/bin/gh-credential|^\\.local/bin/gh-credential$"
-    "git|$HOME/.local/bin/op-ssh-sign|$root/shell/.local/bin/op-ssh-sign|^\\.local/bin/op-ssh-sign$"
+    "git|$HOME/.local/bin/op-ssh-sign|$root/shell/.local/bin/op-ssh-sign"
+    "git|$HOME/.local/bin/op-ssh-sign|$root/git/.local/bin/op-ssh-sign"
   )
 
   for migration in "${migrations[@]}"; do
@@ -121,7 +122,28 @@ remove_obsolete_links() {
 bashrc_sources_fragments() {
   local bashrc="$1"
   [[ -r "$bashrc" ]] || return 1
-  grep -Eq '(~|"?\$\{?HOME\}?"?)/\.bashrc\.d' "$bashrc"
+  awk '
+    /^[[:space:]]*#/ { next }
+    $1 == "for" && $3 == "in" && $0 ~ /bashrc\.d/ { loop_variable = $2 }
+    $1 == "." || $1 == "source" {
+      argument = $2
+      gsub(/^"|"$/, "", argument)
+      if (argument ~ /bashrc\.d/ || (loop_variable != "" && argument == "$" loop_variable)) {
+        found = 1
+      }
+    }
+    END { exit found ? 0 : 1 }
+  ' "$bashrc"
+}
+
+dry_run_requested() {
+  local argument
+  for argument in "$@"; do
+    case "$argument" in
+      -n | --dry-run) return 0 ;;
+    esac
+  done
+  return 1
 }
 
 stow_base() {
@@ -264,7 +286,9 @@ main() {
       cmd_list
       ;;
     base | host)
-      [[ ${EUID:-$(id -u)} -ne 0 ]] || die "do not run Stow as root or with sudo"
+      if [[ ${EUID:-$(id -u)} -eq 0 ]] && ! dry_run_requested "$@"; then
+        die "do not run Stow as root or with sudo"
+      fi
       command -v stow > /dev/null 2>&1 || die "GNU Stow is required; run ./bootstrap.sh --packages-only first"
       "cmd_$command" "$@"
       ;;

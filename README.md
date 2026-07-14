@@ -69,7 +69,7 @@ The package data is split into:
 
 - `ansible/packages/profile.txt`: provider-neutral application identifiers.
 - `ansible/packages/providers/fedora.txt`: Fedora package names.
-- `scripts/package-providers/fedora.sh`: Fedora detection, planning, and
+- `ansible/package-providers/fedora.sh`: Fedora detection, planning, and
   installation behavior.
 
 To add another tested provider, add its mapping and an executable adapter with

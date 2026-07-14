@@ -5,7 +5,9 @@ if [[ -r /etc/bashrc ]]; then
 fi
 
 for rc in "$HOME"/.bashrc.d/*.sh; do
-  # shellcheck disable=SC1090
-  [[ -r "$rc" ]] && . "$rc"
+  if [[ -r "$rc" ]]; then
+    # shellcheck disable=SC1090
+    . "$rc"
+  fi
 done
 unset rc

@@ -3,11 +3,17 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
+export GIT_CONFIG_GLOBAL=/dev/null
 
 shell_scripts=()
 while IFS= read -r -d '' file; do
   shell_scripts+=("$file")
 done < <(find scripts -type f -name '*.sh' -print0)
+
+provider_scripts=()
+while IFS= read -r -d '' file; do
+  provider_scripts+=("$file")
+done < <(find ansible/package-providers -type f -name '*.sh' -print0)
 
 git_bins=()
 while IFS= read -r -d '' file; do
@@ -20,18 +26,19 @@ while IFS= read -r -d '' file; do
 done < <(find shell/.bashrc.d -type f -name '*.sh' -print0)
 
 printf 'Checking shell syntax...\n'
-bash -n bootstrap.sh shell/.bashrc "${shell_scripts[@]}" "${git_bins[@]}" "${bash_fragments[@]}"
+bash -n bootstrap.sh shell/.bashrc "${shell_scripts[@]}" "${provider_scripts[@]}" \
+  "${git_bins[@]}" "${bash_fragments[@]}"
 
 if command -v shellcheck > /dev/null 2>&1; then
   printf 'Running ShellCheck...\n'
-  shellcheck bootstrap.sh "${shell_scripts[@]}" "${git_bins[@]}"
+  shellcheck bootstrap.sh "${shell_scripts[@]}" "${provider_scripts[@]}" "${git_bins[@]}"
   shellcheck --shell=bash shell/.bashrc "${bash_fragments[@]}"
 else
   printf 'Skipping ShellCheck (not installed).\n'
 fi
 
 printf 'Checking executable scripts...\n'
-for script in bootstrap.sh scripts/stow.sh scripts/install-packages.sh scripts/package-providers/*.sh "${git_bins[@]}"; do
+for script in bootstrap.sh scripts/stow.sh scripts/install-packages.sh "${provider_scripts[@]}" "${git_bins[@]}"; do
   [[ -x "$script" ]] || {
     printf 'Script is not executable: %s\n' "$script" >&2
     exit 1
@@ -76,7 +83,11 @@ done < stow-packages.txt
 
 if command -v stow > /dev/null 2>&1; then
   printf 'Checking Stow deployment...\n'
-  ./scripts/stow.sh base --dry-run
+  stow_home="$(mktemp -d)"
+  trap 'rm -rf "$stow_home"' EXIT
+  HOME="$stow_home" ./scripts/stow.sh base --dry-run
+  rm -rf "$stow_home"
+  trap - EXIT
 else
   printf 'Skipping Stow dry-run (GNU Stow not installed).\n'
 fi

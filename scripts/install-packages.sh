@@ -110,7 +110,7 @@ load_profile() {
 main() {
   local root provider="" dry_run=false list_only=false adapter mapping profile index
   root="$(repo_root)"
-  provider_dir="$root/scripts/package-providers"
+  provider_dir="$root/ansible/package-providers"
 
   while [[ $# -gt 0 ]]; do
     case "$1" in

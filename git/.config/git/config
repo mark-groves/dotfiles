@@ -40,16 +40,9 @@
 	signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID+7IIgzSsQxb6Vys3v9d724lhaYnmnYXNQxsu5yHoDI
 [gpg]
 	format = ssh
-[gpg "ssh"]
-	program = op-ssh-sign
 [credential "https://github.com"]
 	helper = 
 	helper = !~/.local/bin/gh-credential
 [credential "https://gist.github.com"]
 	helper = 
 	helper = !~/.local/bin/gh-credential
-[filter "lfs"]
-	clean = git-lfs clean -- %f
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true

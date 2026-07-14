@@ -3,6 +3,7 @@ git
 git-lfs
 github-cli
 c-compiler
+openssh-client
 curl
 tree-sitter-cli
 neovim
