@@ -2,6 +2,7 @@
 git                git
 git-lfs            git-lfs
 github-cli         gh
+lazygit            lazygit
 c-compiler         gcc
 openssh-client      openssh-clients
 curl               curl
