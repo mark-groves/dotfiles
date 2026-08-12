@@ -28,3 +28,4 @@ shellcheck         shellcheck
 shfmt              shfmt
 clipboard          wl-clipboard
 btop               btop
+ghostty            ghostty

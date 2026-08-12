@@ -27,3 +27,4 @@ shellcheck
 shfmt
 clipboard
 btop
+ghostty
