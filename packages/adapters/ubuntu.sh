@@ -93,8 +93,12 @@ print_plan() {
 
 install_packages() {
   collect_missing "$@"
+  local root
+  root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
   if [[ ${#missing_packages[@]} -eq 0 && ${#missing_user_tools[@]} -eq 0 ]]; then
     printf 'All requested Ubuntu packages are already installed.\n'
+    "$root/scripts/install-user-tools.sh" ubuntu-shims
     return
   fi
 
@@ -105,10 +109,11 @@ install_packages() {
   fi
 
   if [[ ${#missing_user_tools[@]} -gt 0 ]]; then
-    local root
-    root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
     "$root/scripts/install-user-tools.sh" "${missing_user_tools[@]}"
   fi
+
+  # Debian package names use fdfind/batcat; keep common names available.
+  "$root/scripts/install-user-tools.sh" ubuntu-shims
 }
 
 case "${1:-}" in

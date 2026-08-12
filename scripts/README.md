@@ -6,7 +6,7 @@ dotfiles.
 | Script | Description |
 |--------|-------------|
 | `install-packages.sh` | Resolve the shared profile through an OS provider |
-| `install-user-tools.sh` | Install ~/.local/bin / rustup tools apt does not cover cleanly |
+| `install-user-tools.sh` | Install ~/.local/bin and rustup tools not covered cleanly by the OS provider |
 | `../packages/adapters/fedora.sh` | Detect Fedora and idempotently install missing RPMs |
 | `../packages/adapters/ubuntu.sh` | Detect Ubuntu and idempotently install missing debs |
 | `stow.sh` | Deploy or repair portable GNU Stow packages |
