@@ -10,10 +10,11 @@ Usage: install-user-tools.sh [tool ...]
 
 Install selected user-space tools into ~/.local/bin (and rust-analyzer via
 rustup when needed). With no arguments, installs the default migration set:
-  starship actionlint ruff zizmor yq rust-analyzer
+  starship uv actionlint ruff zizmor yq rust-analyzer ubuntu-shims
 
 Tools:
-  starship      Prompt binary
+  starship      Prompt binary (Fedora fallback; Ubuntu prefers apt)
+  uv            Astral uv (Ubuntu fallback; Fedora prefers dnf)
   actionlint    GitHub Actions linter
   ruff          Python linter/formatter
   zizmor        GitHub Actions security scanner
@@ -44,6 +45,16 @@ install_starship() {
   need_cmd curl
   ensure_local_bin
   curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b "$HOME/.local/bin"
+}
+
+install_uv() {
+  if command -v uv > /dev/null 2>&1; then
+    printf 'uv already available: %s\n' "$(command -v uv)"
+    return
+  fi
+  need_cmd curl
+  ensure_local_bin
+  curl -fsSL https://astral.sh/uv/install.sh | sh
 }
 
 install_github_release_binary() {
@@ -163,6 +174,7 @@ install_ubuntu_shims() {
 install_one() {
   case "$1" in
     starship) install_starship ;;
+    uv) install_uv ;;
     actionlint) install_actionlint ;;
     ruff) install_ruff ;;
     zizmor) install_zizmor ;;
@@ -176,7 +188,7 @@ install_one() {
 main() {
   local -a tools=("$@")
   if [[ ${#tools[@]} -eq 0 ]]; then
-    tools=(starship actionlint ruff zizmor yq rust-analyzer ubuntu-shims)
+    tools=(starship uv actionlint ruff zizmor yq rust-analyzer ubuntu-shims)
   fi
   [[ ${EUID:-$(id -u)} -ne 0 ]] || die "run as your normal user, not root"
   local tool

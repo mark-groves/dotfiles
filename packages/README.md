@@ -14,5 +14,7 @@ Current adapters:
 - `adapters/fedora.sh` / `providers/fedora.txt`
 - `adapters/ubuntu.sh` / `providers/ubuntu.txt`
 
-On Ubuntu, `rust-analyzer` and mikefarah `yq` are satisfied through
+On Ubuntu, `uv`, `rust-analyzer`, and mikefarah `yq` are satisfied through
 `scripts/install-user-tools.sh` when apt cannot provide the expected binary.
+On Fedora, `starship` uses the same fallback because it is not in the default
+repos.

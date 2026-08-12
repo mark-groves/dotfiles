@@ -23,7 +23,7 @@ is_supported() {
 # semantics as Fedora. Satisfied when the expected binary is already on PATH.
 user_provided_package() {
   case "$1" in
-    rust-analyzer | yq) return 0 ;;
+    rust-analyzer | yq | uv) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -32,6 +32,7 @@ user_provided_binary() {
   case "$1" in
     rust-analyzer) printf 'rust-analyzer\n' ;;
     yq) printf 'yq\n' ;;
+    uv) printf 'uv\n' ;;
     *) return 1 ;;
   esac
 }

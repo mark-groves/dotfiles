@@ -20,10 +20,9 @@ relative to `$HOME`. The managed Bash startup file loads additive fragments from
 deployment preserves it; otherwise Stow stops instead of replacing personal
 shell startup commands.
 
-Supported package providers today are Fedora (`dnf`) and Ubuntu (`apt`). Starship
-configuration is tracked here; third-party repository or binary setup for tools
-the distro does not ship cleanly is handled by `scripts/install-user-tools.sh`
-and by workstation provisioning.
+Supported package providers today are Fedora (`dnf`) and Ubuntu (`apt`). Tools
+the distro does not ship cleanly fall through to `scripts/install-user-tools.sh`
+from the package adapters.
 
 ## Bootstrap
 
@@ -57,9 +56,11 @@ Run either half independently:
 Never run these scripts with `sudo`; the package adapters request elevation only
 for the OS package transaction.
 
-After packages are in place on Ubuntu, install the user-space tools this profile
-expects outside apt (Starship, mikefarah `yq`, `rust-analyzer`, and the usual
-lint binaries):
+After packages are in place, adapters may still call
+`scripts/install-user-tools.sh` for profile entries that apt/dnf cannot satisfy
+cleanly (for example Starship on Fedora, `uv` on Ubuntu, mikefarah `yq`, and
+`rust-analyzer`). You can also run that script directly for the optional lint
+binaries:
 
 ```bash
 ./scripts/install-user-tools.sh
@@ -83,11 +84,18 @@ The package data is split into:
 
 Ubuntu notes:
 
-- Prefer Ubuntu 26.04+ so `lazygit` is available from universe.
-- `rust-analyzer` and mikefarah `yq` are treated as user-space tools because apt
-  either omits them or ships a different `yq`.
+- Prefer Ubuntu 26.04+ so `lazygit`, `ghostty`, and `starship` are in universe.
+- `uv`, `rust-analyzer`, and mikefarah `yq` are treated as user-space tools
+  because apt either omits them or ships a different `yq`.
 - `fd` / `bat` may appear as `fdfind` / `batcat`; shell aliases and optional
   `~/.local/bin` shims cover the usual names.
+
+Fedora notes:
+
+- `starship` is not in the default repos, so the Fedora adapter installs it via
+  `scripts/install-user-tools.sh` when the binary is missing.
+- `ghostty` and `lazygit` expect their usual COPR/third-party repos from
+  workstation provisioning.
 
 To add another tested provider, add its mapping and an executable adapter with
 the same `detect`, `plan`, and `install` interface. The shared profile and Stow
