@@ -35,6 +35,18 @@ need_cmd() {
 
 ensure_local_bin() {
   mkdir -p "$HOME/.local/bin"
+  case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) PATH="$HOME/.local/bin:$PATH" ;;
+  esac
+}
+
+host_arch() {
+  case "$(uname -m)" in
+    x86_64 | amd64) printf 'amd64\n' ;;
+    aarch64 | arm64) printf 'arm64\n' ;;
+    *) die "unsupported architecture: $(uname -m)" ;;
+  esac
 }
 
 install_starship() {
@@ -55,13 +67,14 @@ install_uv() {
   need_cmd curl
   ensure_local_bin
   curl -fsSL https://astral.sh/uv/install.sh | sh
+  ensure_local_bin
 }
 
 install_github_release_binary() {
-  local tool="$1" repo="$2" asset_glob="$3" archive_bin="${4:-}"
+  local tool="$1" repo="$2" asset_glob="$3" archive_bin="${4:-}" force="${5:-}"
   local arch uname_m url tmp
 
-  if command -v "$tool" > /dev/null 2>&1; then
+  if [[ "$force" != "--force" ]] && command -v "$tool" > /dev/null 2>&1; then
     printf '%s already available: %s\n' "$tool" "$(command -v "$tool")"
     return
   fi
@@ -110,11 +123,14 @@ install_github_release_binary() {
 }
 
 install_actionlint() {
-  install_github_release_binary actionlint rhysd/actionlint \
-    'actionlint_.*_linux_amd64\\.tar\\.gz$' actionlint
+  local arch asset_glob
+  arch="$(host_arch)"
+  asset_glob="actionlint_.*_linux_${arch}\\.tar\\.gz$"
+  install_github_release_binary actionlint rhysd/actionlint "$asset_glob" actionlint
 }
 
 install_ruff() {
+  local arch target asset_glob
   if command -v ruff > /dev/null 2>&1; then
     printf 'ruff already available: %s\n' "$(command -v ruff)"
     return
@@ -123,14 +139,24 @@ install_ruff() {
     uv tool install ruff
     return
   fi
+  arch="$(host_arch)"
+  case "$arch" in
+    amd64) target='x86_64-unknown-linux-gnu' ;;
+    arm64) target='aarch64-unknown-linux-gnu' ;;
+    *) die "unsupported architecture for ruff: $arch" ;;
+  esac
+  asset_glob="ruff-${target}\\.tar\\.gz$"
   install_github_release_binary ruff astral-sh/ruff \
-    'ruff-x86_64-unknown-linux-gnu\\.tar\\.gz$' ruff-x86_64-unknown-linux-gnu/ruff
+    "$asset_glob" "ruff-${target}/ruff"
 }
 
 install_zizmor() {
   if command -v zizmor > /dev/null 2>&1; then
     printf 'zizmor already available: %s\n' "$(command -v zizmor)"
     return
+  fi
+  if ! command -v uv > /dev/null 2>&1; then
+    install_uv
   fi
   if command -v uv > /dev/null 2>&1; then
     uv tool install zizmor
@@ -140,14 +166,17 @@ install_zizmor() {
 }
 
 install_yq() {
+  local arch force=''
   if command -v yq > /dev/null 2>&1; then
     if yq --version 2> /dev/null | grep -qi mikefarah; then
       printf 'mikefarah yq already available: %s\n' "$(command -v yq)"
       return
     fi
     printf 'Warning: existing yq is not mikefarah/yq; installing alongside in ~/.local/bin\n' >&2
+    force='--force'
   fi
-  install_github_release_binary yq mikefarah/yq 'yq_linux_amd64$'
+  arch="$(host_arch)"
+  install_github_release_binary yq mikefarah/yq "yq_linux_${arch}$" '' "$force"
 }
 
 install_rust_analyzer() {
@@ -191,6 +220,7 @@ main() {
     tools=(starship uv actionlint ruff zizmor yq rust-analyzer ubuntu-shims)
   fi
   [[ ${EUID:-$(id -u)} -ne 0 ]] || die "run as your normal user, not root"
+  ensure_local_bin
   local tool
   for tool in "${tools[@]}"; do
     install_one "$tool"
