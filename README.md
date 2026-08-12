@@ -14,7 +14,7 @@ and system tuning—belongs in a separate repository.
 ## Managed configuration
 
 The default Stow deployment includes Git, Ghostty, Neovim/LazyVim, Bash, tmux,
-Starship, Lazygit, Herdr, and Cursor user settings. Package contents mirror paths
+Starship, Lazygit, and Herdr. Package contents mirror paths
 relative to `$HOME`. The managed Bash startup file loads additive fragments from
 `~/.bashrc.d`. If an existing `~/.bashrc` already loads that directory,
 deployment preserves it; otherwise Stow stops instead of replacing personal
