@@ -26,3 +26,4 @@ unzip
 shellcheck
 shfmt
 clipboard
+btop

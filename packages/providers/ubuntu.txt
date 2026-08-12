@@ -27,3 +27,4 @@ unzip              unzip
 shellcheck         shellcheck
 shfmt              shfmt
 clipboard          wl-clipboard
+btop               btop
