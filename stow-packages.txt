@@ -3,7 +3,5 @@ git
 ghostty
 nvim
 shell
-tmux
 starship
-lazygit
 herdr
