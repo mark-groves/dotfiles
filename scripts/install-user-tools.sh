@@ -19,7 +19,7 @@ Tools:
   ruff          Python linter/formatter
   zizmor        GitHub Actions security scanner
   yq            mikefarah/yq (not the Ubuntu kislyuk wrapper)
-  rust-analyzer rustup component
+  rust-analyzer rustup component, or GitHub binary without rustup
   ubuntu-shims  fd/bat name compatibility links for Debian packaging
 EOF
 }
@@ -102,7 +102,9 @@ install_github_release_binary() {
   [[ -n "$url" && "$url" != null ]] || die "could not locate a $tool release asset"
 
   tmp="$(mktemp -d)"
-  trap 'rm -rf "$tmp"' RETURN
+  # Expand now: locals are unset when the RETURN trap runs under set -u.
+  # shellcheck disable=SC2064
+  trap "rm -rf $(printf '%q' "$tmp")" RETURN
   curl -fsSL "$url" -o "$tmp/asset"
 
   case "$url" in
@@ -114,6 +116,11 @@ install_github_release_binary() {
         install -m 0755 "$(find "$tmp" -type f -name "$tool" | head -n 1)" \
           "$HOME/.local/bin/$tool"
       fi
+      ;;
+    *.gz)
+      need_cmd gzip
+      gzip -dc "$tmp/asset" > "$tmp/$tool"
+      install -m 0755 "$tmp/$tool" "$HOME/.local/bin/$tool"
       ;;
     *)
       install -m 0755 "$tmp/asset" "$HOME/.local/bin/$tool"
@@ -180,12 +187,25 @@ install_yq() {
 }
 
 install_rust_analyzer() {
+  local arch target asset_glob
   if command -v rust-analyzer > /dev/null 2>&1; then
     printf 'rust-analyzer already available: %s\n' "$(command -v rust-analyzer)"
     return
   fi
-  need_cmd rustup
-  rustup component add rust-analyzer
+  if command -v rustup > /dev/null 2>&1; then
+    rustup component add rust-analyzer
+    return
+  fi
+
+  # Ubuntu apt ships rustc/cargo without rustup; fall back to the release binary.
+  arch="$(host_arch)"
+  case "$arch" in
+    amd64) target='x86_64-unknown-linux-gnu' ;;
+    arm64) target='aarch64-unknown-linux-gnu' ;;
+    *) die "unsupported architecture for rust-analyzer: $arch" ;;
+  esac
+  asset_glob="rust-analyzer-${target}\\.gz$"
+  install_github_release_binary rust-analyzer rust-lang/rust-analyzer "$asset_glob"
 }
 
 install_ubuntu_shims() {
