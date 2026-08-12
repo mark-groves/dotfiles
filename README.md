@@ -20,10 +20,10 @@ relative to `$HOME`. The managed Bash startup file loads additive fragments from
 deployment preserves it; otherwise Stow stops instead of replacing personal
 shell startup commands.
 
-Supported package providers today are Fedora (`dnf`) and Ubuntu (`apt`). Ghostty
-and Starship configuration is tracked here; third-party repository or binary
-setup for tools the distro does not ship cleanly is handled by
-`scripts/install-user-tools.sh` and by workstation provisioning.
+Supported package providers today are Fedora (`dnf`) and Ubuntu (`apt`). Starship
+configuration is tracked here; third-party repository or binary setup for tools
+the distro does not ship cleanly is handled by `scripts/install-user-tools.sh`
+and by workstation provisioning.
 
 ## Bootstrap
 
