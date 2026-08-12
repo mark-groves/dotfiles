@@ -127,9 +127,6 @@ Use `git cis` for an explicitly signed personal commit. GitHub HTTPS credentials
 are delegated to `gh auth git-credential` through `~/.local/bin/gh-credential`.
 Credentials and private keys are never stored in this repository.
 
-Machine-local Git overrides belong in `~/.config/git/config.local`, which is
-included from the tracked config and is not part of this repository.
-
 ## Validation
 
 Run the repository checks before committing implementation changes:
