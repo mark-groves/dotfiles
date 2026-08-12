@@ -6,4 +6,8 @@ intentionally creating a signed commit. Git uses the platform SSH signer and
 the key exposed by the user's SSH agent, including 1Password's SSH agent.
 
 Authentication is separate from signing. HTTPS GitHub credentials are supplied
-by `gh auth git-credential`; no token is stored in this repository.
+by `gh auth git-credential` through `~/.local/bin/gh-credential`; no token is
+stored in this repository.
+
+Machine-specific overrides (for example CodeRabbit's `machineId`) belong in
+`~/.config/git/config.local`, which the tracked config includes when present.

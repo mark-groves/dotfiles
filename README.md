@@ -8,22 +8,22 @@ This repository has a deliberately narrow job:
 2. Map that profile to the current operating system's package names.
 3. Link portable application configuration into the user's home directory.
 
-Full Fedora workstation provisioning—including repositories, drivers, desktop
-policy, and system tuning—belongs in a separate repository.
+Full workstation provisioning—including repositories, drivers, desktop policy,
+and system tuning—belongs in a separate repository.
 
 ## Managed configuration
 
 The default Stow deployment includes Git, Ghostty, Neovim/LazyVim, Bash, tmux,
-and Starship. Package contents mirror paths relative to `$HOME`. The managed
-Bash startup file loads additive fragments from `~/.bashrc.d`. If an existing
-`~/.bashrc` already loads that directory, deployment preserves it; otherwise
-Stow stops instead of replacing personal shell startup commands.
+Starship, Lazygit, Herdr, btop, and Cursor user settings. Package contents mirror paths
+relative to `$HOME`. The managed Bash startup file loads additive fragments from
+`~/.bashrc.d`. If an existing `~/.bashrc` already loads that directory,
+deployment preserves it; otherwise Stow stops instead of replacing personal
+shell startup commands.
 
-The Fedora package profile installs the core command-line applications and
-utilities available from the configured DNF repositories on mutable Fedora
-installations. Ghostty and Starship configuration is tracked here, but their
-third-party repository or binary setup is intentionally left to workstation
-provisioning.
+Supported package providers today are Fedora (`dnf`) and Ubuntu (`apt`). Ghostty
+and Starship configuration is tracked here; third-party repository or binary
+setup for tools the distro does not ship cleanly is handled by
+`scripts/install-user-tools.sh` and by workstation provisioning.
 
 ## Bootstrap
 
@@ -43,9 +43,9 @@ Install missing packages and deploy all configured dotfiles:
 ./bootstrap.sh
 ```
 
-The package step is idempotent: the Fedora adapter checks installed RPMs and
-invokes DNF only for missing packages. The Stow step always uses `--restow` so
-it also repairs managed symlinks.
+The package step is idempotent: each OS adapter checks what is already present
+and only installs what is missing. The Stow step always uses `--restow` so it
+also repairs managed symlinks.
 
 Run either half independently:
 
@@ -54,27 +54,44 @@ Run either half independently:
 ./bootstrap.sh --dotfiles-only
 ```
 
-Never run these scripts with `sudo`; the Fedora adapter requests elevation only
-for the DNF transaction.
+Never run these scripts with `sudo`; the package adapters request elevation only
+for the OS package transaction.
+
+After packages are in place on Ubuntu, install the user-space tools this profile
+expects outside apt (Starship, mikefarah `yq`, `rust-analyzer`, and the usual
+lint binaries):
+
+```bash
+./scripts/install-user-tools.sh
+```
 
 ## Package tracking
 
-List the portable identifiers and their Fedora package mapping:
+List the portable identifiers and their OS package mapping:
 
 ```bash
 ./scripts/install-packages.sh --provider fedora --list
+./scripts/install-packages.sh --provider ubuntu --list
 ```
 
 The package data is split into:
 
-- `ansible/packages/profile.txt`: provider-neutral application identifiers.
-- `ansible/packages/providers/fedora.txt`: Fedora package names.
-- `ansible/package-providers/fedora.sh`: Fedora detection, planning, and
-  installation behavior.
+- `packages/profile.txt`: provider-neutral application identifiers.
+- `packages/providers/<provider>.txt`: OS package names.
+- `packages/adapters/<provider>.sh`: detection, planning, and installation
+  behavior.
+
+Ubuntu notes:
+
+- Prefer Ubuntu 26.04+ so `lazygit` is available from universe.
+- `rust-analyzer` and mikefarah `yq` are treated as user-space tools because apt
+  either omits them or ships a different `yq`.
+- `fd` / `bat` may appear as `fdfind` / `batcat`; shell aliases and optional
+  `~/.local/bin` shims cover the usual names.
 
 To add another tested provider, add its mapping and an executable adapter with
-the same `detect`, `plan`, and `install` interface. The shared profile and
-Stow packages do not change.
+the same `detect`, `plan`, and `install` interface. The shared profile and Stow
+packages do not change.
 
 ## Dotfiles
 
@@ -99,8 +116,11 @@ from being mistaken for dotfile packages.
 
 Ordinary commits are unsigned so unattended tools do not block on 1Password.
 Use `git cis` for an explicitly signed personal commit. GitHub HTTPS credentials
-are delegated to `gh auth git-credential`; credentials and private keys are
-never stored in this repository.
+are delegated to `gh auth git-credential` through `~/.local/bin/gh-credential`.
+Credentials and private keys are never stored in this repository.
+
+Machine-local Git overrides belong in `~/.config/git/config.local`, which is
+included from the tracked config and is not part of this repository.
 
 ## Validation
 

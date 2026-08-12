@@ -5,3 +5,7 @@ nvim
 shell
 tmux
 starship
+lazygit
+cursor
+herdr
+btop

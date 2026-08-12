@@ -15,7 +15,6 @@ cargo
 rust-analyzer
 neovim
 stow
-tmux
 direnv
 ripgrep
 fd
