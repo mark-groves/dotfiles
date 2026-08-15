@@ -4,7 +4,9 @@ Starship prompt configuration stow package. Stows to `~/.config/starship.toml`.
 
 ## Theme
 
-Switch the active palette by changing one line in `starship.toml`:
+Switch the active palette by changing one line in `starship.toml`, or leave
+`tokyo_night` / `tokyo_night_day` and let the shell pick from the desktop
+light/dark setting:
 
 ```toml
 palette = "tokyo_night"
@@ -12,15 +14,16 @@ palette = "tokyo_night"
 
 Available palettes:
 
-| Palette           |
-|-------------------|
-| `tokyo_night`     |
-| `catppuccin_mocha`|
-| `gruvbox_dark`    |
-| `nord`            |
-| `kanagawa`        |
-| `rose_pine`       |
-| `osaka_jade`      |
+| Palette            |
+|--------------------|
+| `tokyo_night`      |
+| `tokyo_night_day`  |
+| `catppuccin_mocha` |
+| `gruvbox_dark`     |
+| `nord`             |
+| `kanagawa`         |
+| `rose_pine`        |
+| `osaka_jade`       |
 
 ## Prompt format
 

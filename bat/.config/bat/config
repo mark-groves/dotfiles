@@ -1,0 +1,3 @@
+# Theme comes from BAT_THEME, set by ~/.bashrc.d/40-tokyo-night.sh
+# (tokyonight_night or tokyonight_day). Rebuild after adding themes:
+#   bat cache --build

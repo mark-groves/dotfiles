@@ -22,6 +22,15 @@
 	algorithm = histogram    # Clearer diffs on moved/edited lines
 	colorMoved = plain       # Highlight moved blocks in diffs
 	mnemonicPrefix = true    # More intuitive refs in diff output
+[core]
+	pager = tokyo-night-delta
+[interactive]
+	diffFilter = tokyo-night-delta --color-only
+[delta]
+	navigate = true
+	line-numbers = true
+[merge]
+	conflictstyle = zdiff3
 [commit]
 	verbose = true           # Include diff comment in commit message template
 	gpgSign = false

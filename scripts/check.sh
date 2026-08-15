@@ -20,6 +20,13 @@ while IFS= read -r -d '' file; do
   git_bins+=("$file")
 done < <(find git/.local/bin -type f -print0)
 
+user_bins=("${git_bins[@]}")
+if [[ -d shell/.local/bin ]]; then
+  while IFS= read -r -d '' file; do
+    user_bins+=("$file")
+  done < <(find shell/.local/bin -type f -print0)
+fi
+
 bash_fragments=()
 while IFS= read -r -d '' file; do
   bash_fragments+=("$file")
@@ -27,11 +34,11 @@ done < <(find shell/.bashrc.d -type f -name '*.sh' -print0)
 
 printf 'Checking shell syntax...\n'
 bash -n bootstrap.sh shell/.bashrc "${shell_scripts[@]}" "${provider_scripts[@]}" \
-  "${git_bins[@]}" "${bash_fragments[@]}"
+  "${user_bins[@]}" "${bash_fragments[@]}"
 
 if command -v shellcheck > /dev/null 2>&1; then
   printf 'Running ShellCheck...\n'
-  shellcheck bootstrap.sh "${shell_scripts[@]}" "${provider_scripts[@]}" "${git_bins[@]}"
+  shellcheck bootstrap.sh "${shell_scripts[@]}" "${provider_scripts[@]}" "${user_bins[@]}"
   shellcheck --shell=bash shell/.bashrc "${bash_fragments[@]}"
 else
   printf 'Skipping ShellCheck (not installed).\n'
@@ -39,7 +46,7 @@ fi
 
 printf 'Checking executable scripts...\n'
 for script in bootstrap.sh scripts/stow.sh scripts/install-packages.sh \
-  scripts/install-user-tools.sh "${provider_scripts[@]}" "${git_bins[@]}"; do
+  scripts/install-user-tools.sh "${provider_scripts[@]}" "${user_bins[@]}"; do
   [[ -x "$script" ]] || {
     printf 'Script is not executable: %s\n' "$script" >&2
     exit 1
@@ -54,6 +61,16 @@ if command -v jq > /dev/null 2>&1; then
   jq empty nvim/.config/nvim/lazy-lock.json
 else
   printf 'Skipping JSON validation (jq not installed).\n'
+fi
+
+printf 'Checking YAML files...\n'
+if command -v yq > /dev/null 2>&1; then
+  yq -e '.' lazygit/.config/lazygit/tokyonight_night.yml > /dev/null
+  yq -e '.' lazygit/.config/lazygit/tokyonight_day.yml > /dev/null
+  yq -e '.' eza/.config/eza/night/theme.yml > /dev/null
+  yq -e '.' eza/.config/eza/day/theme.yml > /dev/null
+else
+  printf 'Skipping YAML validation (yq not installed).\n'
 fi
 
 printf 'Checking package profile and provider mappings...\n'

@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Print "night" or "day" from the desktop color-scheme.
+# GNOME: prefer-dark -> night; default / prefer-light -> day.
+# Falls back to the XDG portal, then night.
+
+scheme=""
+if command -v gsettings > /dev/null 2>&1; then
+  scheme="$(gsettings get org.gnome.desktop.interface color-scheme 2> /dev/null || true)"
+fi
+
+case "$scheme" in
+  *prefer-dark*)
+    printf 'night\n'
+    exit 0
+    ;;
+  *prefer-light* | *default* | *no-preference*)
+    printf 'day\n'
+    exit 0
+    ;;
+esac
+
+if command -v gdbus > /dev/null 2>&1; then
+  reply="$(
+    gdbus call --session \
+      --dest org.freedesktop.portal.Desktop \
+      --object-path /org/freedesktop/portal/desktop \
+      --method org.freedesktop.portal.Settings.Read \
+      org.freedesktop.appearance color-scheme 2> /dev/null || true
+  )"
+  case "$reply" in
+    *uint32\ 1*)
+      printf 'night\n'
+      exit 0
+      ;;
+    *uint32\ 2*)
+      printf 'day\n'
+      exit 0
+      ;;
+  esac
+fi
+
+printf 'night\n'

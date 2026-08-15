@@ -23,7 +23,7 @@ is_supported() {
 # semantics as Fedora. Satisfied when the expected binary is already on PATH.
 user_provided_package() {
   case "$1" in
-    rust-analyzer | yq | uv) return 0 ;;
+    rust-analyzer | yq | uv | herdr | codex | cursor-cli) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -33,6 +33,9 @@ user_provided_binary() {
     rust-analyzer) printf 'rust-analyzer\n' ;;
     yq) printf 'yq\n' ;;
     uv) printf 'uv\n' ;;
+    herdr) printf 'herdr\n' ;;
+    codex) printf 'codex\n' ;;
+    cursor-cli) printf 'agent\n' ;;
     *) return 1 ;;
   esac
 }
@@ -98,7 +101,7 @@ install_packages() {
 
   if [[ ${#missing_packages[@]} -eq 0 && ${#missing_user_tools[@]} -eq 0 ]]; then
     printf 'All requested Ubuntu packages are already installed.\n'
-    "$root/scripts/install-user-tools.sh" ubuntu-shims
+    "$root/scripts/install-user-tools.sh" ubuntu-shims starship
     return
   fi
 
@@ -113,7 +116,8 @@ install_packages() {
   fi
 
   # Debian package names use fdfind/batcat; keep common names available.
-  "$root/scripts/install-user-tools.sh" ubuntu-shims
+  # Universe Starship can lag the pinned GitHub release used by the prompt config.
+  "$root/scripts/install-user-tools.sh" ubuntu-shims starship
 }
 
 case "${1:-}" in

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+real_command() {
+  local name="$1" self dir candidate
+  local IFS=:
+  self="$(readlink -f "$0")"
+  for dir in $PATH; do
+    candidate="${dir%/}/$name"
+    [[ -x "$candidate" ]] || continue
+    [[ "$(readlink -f "$candidate")" == "$self" ]] && continue
+    printf '%s\n' "$candidate"
+    return 0
+  done
+  return 1
+}
+
+style="night"
+if command -v tokyo-night-style > /dev/null 2>&1; then
+  style="$(tokyo-night-style)"
+fi
+
+real="$(real_command lazygit)" || {
+  printf 'lazygit not found on PATH\n' >&2
+  exit 127
+}
+
+cfg="${HOME}/.config/lazygit/tokyonight_${style}.yml"
+if [[ -f "$cfg" ]]; then
+  exec "$real" --use-config-file "$cfg" "$@"
+fi
+exec "$real" "$@"

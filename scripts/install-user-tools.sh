@@ -13,8 +13,11 @@ rustup when needed). With no arguments, installs the default migration set:
   starship uv actionlint ruff zizmor yq rust-analyzer ubuntu-shims
 
 Tools:
-  starship      Prompt binary (Fedora fallback; Ubuntu prefers apt)
+  starship      Prompt binary (pinned GitHub release; overlays older distro packages)
   uv            Astral uv (Ubuntu fallback; Fedora prefers dnf)
+  herdr         Agent multiplexer (GitHub release binary)
+  codex         OpenAI Codex CLI (GitHub musl release)
+  cursor-cli    Cursor Agent CLI (`agent`; official installer)
   actionlint    GitHub Actions linter
   ruff          Python linter/formatter
   zizmor        GitHub Actions security scanner
@@ -55,6 +58,21 @@ host_arch() {
 STARSHIP_RELEASE='1.26.0'
 UV_RELEASE='0.12.5'
 
+# True when $1 is a semantic version greater than or equal to $2.
+semver_ge() {
+  local left="$1" right="$2"
+  [[ -n "$left" && -n "$right" ]] || return 1
+  [[ "$(printf '%s\n%s\n' "$left" "$right" | sort -V | tail -n1)" == "$left" ]]
+}
+
+current_starship_version() {
+  local raw
+  command -v starship > /dev/null 2>&1 || return 1
+  raw="$(starship --version 2> /dev/null | awk 'NR == 1 { print $2 }')"
+  [[ -n "$raw" ]] || return 1
+  printf '%s\n' "$raw"
+}
+
 verify_sha256() {
   local file="$1" expected="$2" actual
   need_cmd sha256sum
@@ -74,12 +92,15 @@ download_verified_tarball() {
 }
 
 install_starship() {
-  local arch target sha256 url tmp
-  if command -v starship > /dev/null 2>&1; then
-    printf 'starship already available: %s\n' "$(command -v starship)"
+  local arch target sha256 url tmp current
+  ensure_local_bin
+  if current="$(current_starship_version)" && semver_ge "$current" "$STARSHIP_RELEASE"; then
+    printf 'starship %s already available: %s\n' "$current" "$(command -v starship)"
     return
   fi
-  ensure_local_bin
+  if [[ -n "${current:-}" ]]; then
+    printf 'Upgrading starship %s -> %s\n' "$current" "$STARSHIP_RELEASE"
+  fi
   arch="$(host_arch)"
   case "$arch" in
     amd64)
@@ -282,10 +303,54 @@ install_ubuntu_shims() {
   fi
 }
 
+install_herdr() {
+  local arch asset_glob
+  if command -v herdr > /dev/null 2>&1; then
+    printf 'herdr already available: %s\n' "$(command -v herdr)"
+    return
+  fi
+  arch="$(host_arch)"
+  case "$arch" in
+    amd64) asset_glob='^herdr-linux-x86_64$' ;;
+    arm64) asset_glob='^herdr-linux-aarch64$' ;;
+    *) die "unsupported architecture for herdr: $arch" ;;
+  esac
+  install_github_release_binary herdr herdrdev/herdr "$asset_glob"
+}
+
+install_codex() {
+  local arch target
+  if command -v codex > /dev/null 2>&1; then
+    printf 'codex already available: %s\n' "$(command -v codex)"
+    return
+  fi
+  arch="$(host_arch)"
+  case "$arch" in
+    amd64) target='x86_64-unknown-linux-musl' ;;
+    arm64) target='aarch64-unknown-linux-musl' ;;
+    *) die "unsupported architecture for codex: $arch" ;;
+  esac
+  install_github_release_binary codex openai/codex \
+    "^codex-${target}\\.tar\\.gz$" "codex-${target}"
+}
+
+install_cursor_cli() {
+  if command -v agent > /dev/null 2>&1; then
+    printf 'cursor CLI already available: %s\n' "$(command -v agent)"
+    return
+  fi
+  need_cmd curl
+  ensure_local_bin
+  curl -fsS https://cursor.com/install | bash
+}
+
 install_one() {
   case "$1" in
     starship) install_starship ;;
     uv) install_uv ;;
+    herdr) install_herdr ;;
+    codex) install_codex ;;
+    cursor-cli) install_cursor_cli ;;
     actionlint) install_actionlint ;;
     ruff) install_ruff ;;
     zizmor) install_zizmor ;;

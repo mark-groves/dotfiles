@@ -194,6 +194,12 @@ stow_base() {
   done
 
   [[ ${#failed[@]} -eq 0 ]] || die "failed Stow packages: ${failed[*]}"
+
+  if ! "$dry_run" && package_selected bat "${packages[@]}" && command -v bat > /dev/null 2>&1; then
+    printf 'Rebuilding bat theme cache...\n'
+    env -u XDG_CONFIG_HOME -u XDG_CACHE_HOME bat cache --build
+  fi
+
   printf 'Done.\n'
 }
 
