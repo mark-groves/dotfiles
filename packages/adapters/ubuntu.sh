@@ -75,23 +75,29 @@ collect_missing() {
 
 print_plan() {
   collect_missing "$@"
+  local root
+  root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
   if [[ ${#missing_packages[@]} -eq 0 && ${#missing_user_tools[@]} -eq 0 ]]; then
     printf 'All requested Ubuntu packages are already installed.\n'
-    return
+  else
+    if [[ ${#missing_packages[@]} -gt 0 ]]; then
+      printf 'Would install %d missing Ubuntu package(s):\n' "${#missing_packages[@]}"
+      printf '  sudo apt-get install --yes'
+      printf ' %q' "${missing_packages[@]}"
+      printf '\n'
+    fi
+
+    if [[ ${#missing_user_tools[@]} -gt 0 ]]; then
+      printf 'Would install %d user-space tool(s) via scripts/install-user-tools.sh:\n' \
+        "${#missing_user_tools[@]}"
+      printf '  %s\n' "${missing_user_tools[@]}"
+    fi
   fi
 
-  if [[ ${#missing_packages[@]} -gt 0 ]]; then
-    printf 'Would install %d missing Ubuntu package(s):\n' "${#missing_packages[@]}"
-    printf '  sudo apt-get install --yes'
-    printf ' %q' "${missing_packages[@]}"
-    printf '\n'
-  fi
-
-  if [[ ${#missing_user_tools[@]} -gt 0 ]]; then
-    printf 'Would install %d user-space tool(s) via scripts/install-user-tools.sh:\n' \
-      "${#missing_user_tools[@]}"
-    printf '  %s\n' "${missing_user_tools[@]}"
-  fi
+  # install_packages always overlays the pinned Starship release when universe
+  # is older; dry-run must report that user-space install too.
+  "$root/scripts/install-user-tools.sh" --plan starship
 }
 
 install_packages() {

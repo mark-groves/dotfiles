@@ -6,11 +6,13 @@ set -euo pipefail
 
 usage() {
   cat << 'EOF'
-Usage: install-user-tools.sh [tool ...]
+Usage: install-user-tools.sh [--plan] [tool ...]
 
 Install selected user-space tools into ~/.local/bin (and rust-analyzer via
 rustup when needed). With no arguments, installs the default migration set:
   starship uv actionlint ruff zizmor yq rust-analyzer ubuntu-shims
+
+  --plan        Print whether a tool would be installed or overlaid (starship)
 
 Tools:
   starship      Prompt binary (pinned GitHub release; overlays older distro packages)
@@ -89,6 +91,28 @@ download_verified_tarball() {
   curl -fsSL "$url" -o "$dest_dir/asset.tar.gz"
   verify_sha256 "$dest_dir/asset.tar.gz" "$sha256"
   tar -xzf "$dest_dir/asset.tar.gz" -C "$dest_dir"
+}
+
+plan_starship() {
+  local current
+  if current="$(current_starship_version)" && semver_ge "$current" "$STARSHIP_RELEASE"; then
+    return 0
+  fi
+  if [[ -n "${current:-}" ]]; then
+    printf 'Would overlay Starship %s -> %s via scripts/install-user-tools.sh:\n' \
+      "$current" "$STARSHIP_RELEASE"
+  else
+    printf 'Would install Starship %s via scripts/install-user-tools.sh:\n' \
+      "$STARSHIP_RELEASE"
+  fi
+  printf '  starship\n'
+}
+
+plan_one() {
+  case "$1" in
+    starship) plan_starship ;;
+    *) die "no dry-run plan for $1" ;;
+  esac
 }
 
 install_starship() {
@@ -362,6 +386,19 @@ install_one() {
 }
 
 main() {
+  local plan=false
+  if [[ "${1:-}" == --plan ]]; then
+    plan=true
+    shift
+  fi
+  if "$plan"; then
+    [[ $# -gt 0 ]] || die "--plan requires a tool name"
+    local tool
+    for tool in "$@"; do
+      plan_one "$tool"
+    done
+    return
+  fi
   local -a tools=("$@")
   if [[ ${#tools[@]} -eq 0 ]]; then
     tools=(starship uv actionlint ruff zizmor yq rust-analyzer ubuntu-shims)
