@@ -13,7 +13,7 @@ done < <(find scripts -type f -name '*.sh' -print0)
 provider_scripts=()
 while IFS= read -r -d '' file; do
   provider_scripts+=("$file")
-done < <(find ansible/package-providers -type f -name '*.sh' -print0)
+done < <(find packages/adapters -type f -name '*.sh' -print0)
 
 git_bins=()
 while IFS= read -r -d '' file; do
@@ -38,7 +38,8 @@ else
 fi
 
 printf 'Checking executable scripts...\n'
-for script in bootstrap.sh scripts/stow.sh scripts/install-packages.sh "${provider_scripts[@]}" "${git_bins[@]}"; do
+for script in bootstrap.sh scripts/stow.sh scripts/install-packages.sh \
+  scripts/install-user-tools.sh "${provider_scripts[@]}" "${git_bins[@]}"; do
   [[ -x "$script" ]] || {
     printf 'Script is not executable: %s\n' "$script" >&2
     exit 1
@@ -55,8 +56,9 @@ else
   printf 'Skipping JSON validation (jq not installed).\n'
 fi
 
-printf 'Checking package profile and Fedora mapping...\n'
+printf 'Checking package profile and provider mappings...\n'
 ./scripts/install-packages.sh --provider fedora --list > /dev/null
+./scripts/install-packages.sh --provider ubuntu --list > /dev/null
 
 printf 'Checking Stow package manifest...\n'
 stow_packages=()

@@ -3,5 +3,5 @@ git
 ghostty
 nvim
 shell
-tmux
 starship
+herdr

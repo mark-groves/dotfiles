@@ -27,3 +27,7 @@ unzip               unzip
 shellcheck          ShellCheck
 shfmt               shfmt
 clipboard           wl-clipboard
+btop                btop
+ghostty             ghostty
+starship            starship
+uv                  uv

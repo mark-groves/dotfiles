@@ -15,7 +15,6 @@ cargo
 rust-analyzer
 neovim
 stow
-tmux
 direnv
 ripgrep
 fd
@@ -27,3 +26,7 @@ unzip
 shellcheck
 shfmt
 clipboard
+btop
+ghostty
+starship
+uv

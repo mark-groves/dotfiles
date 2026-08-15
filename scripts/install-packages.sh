@@ -110,7 +110,7 @@ load_profile() {
 main() {
   local root provider="" dry_run=false list_only=false adapter mapping profile index
   root="$(repo_root)"
-  provider_dir="$root/ansible/package-providers"
+  provider_dir="$root/packages/adapters"
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -137,8 +137,8 @@ main() {
   valid_identifier "$provider" || die "invalid provider name: $provider"
 
   adapter="$provider_dir/$provider.sh"
-  mapping="$root/ansible/packages/providers/$provider.txt"
-  profile="$root/ansible/packages/profile.txt"
+  mapping="$root/packages/providers/$provider.txt"
+  profile="$root/packages/profile.txt"
   [[ -x "$adapter" ]] || die "package provider adapter is not executable: $adapter"
 
   load_mapping "$mapping"
