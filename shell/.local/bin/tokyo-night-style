@@ -2,9 +2,10 @@
 set -euo pipefail
 
 # Print "night" or "day" from the desktop color-scheme.
-# GNOME sessions: prefer-dark -> night; default / prefer-light -> day.
+# GNOME sessions: prefer-dark -> night; default / prefer-light / no-preference -> day.
 # Other desktops: XDG portal (avoids a stale GNOME schema on Plasma).
-# Last resort: night.
+# Portal 1 -> night; 0, 2, or any other uint32 -> day (0 is no preference).
+# Last resort, when neither source answers: night.
 
 scheme=""
 desktop="${XDG_CURRENT_DESKTOP,,}"
@@ -36,7 +37,7 @@ if command -v gdbus > /dev/null 2>&1; then
       printf 'night\n'
       exit 0
       ;;
-    *uint32\ 2*)
+    *uint32\ *)
       printf 'day\n'
       exit 0
       ;;
