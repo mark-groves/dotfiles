@@ -23,7 +23,7 @@ is_supported() {
 # Not shipped in default Fedora repos; satisfied when the binary is on PATH.
 user_provided_package() {
   case "$1" in
-    starship) return 0 ;;
+    starship | herdr | codex | cursor-cli) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -31,6 +31,9 @@ user_provided_package() {
 user_provided_binary() {
   case "$1" in
     starship) printf 'starship\n' ;;
+    herdr) printf 'herdr\n' ;;
+    codex) printf 'codex\n' ;;
+    cursor-cli) printf 'agent\n' ;;
     *) return 1 ;;
   esac
 }

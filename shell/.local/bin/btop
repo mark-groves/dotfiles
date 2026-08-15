@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Run the real binary named $1, skipping this wrapper if it is on PATH.
+real_command() {
+  local name="$1" self dir candidate
+  local IFS=:
+  self="$(readlink -f "$0")"
+  for dir in $PATH; do
+    candidate="${dir%/}/$name"
+    [[ -x "$candidate" ]] || continue
+    [[ "$(readlink -f "$candidate")" == "$self" ]] && continue
+    printf '%s\n' "$candidate"
+    return 0
+  done
+  return 1
+}
+
+style="night"
+if command -v tokyo-night-style > /dev/null 2>&1; then
+  style="$(tokyo-night-style)"
+fi
+
+real="$(real_command btop)" || {
+  printf 'btop not found on PATH\n' >&2
+  exit 127
+}
+
+conf="${HOME}/.config/btop/btop-${style}.conf"
+if [[ -f "$conf" ]]; then
+  exec "$real" --config "$conf" "$@"
+fi
+exec "$real" "$@"

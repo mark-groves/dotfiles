@@ -7,20 +7,8 @@ auto_switch = true
 dark_name = "tokyo-night"
 light_name = "tokyo-night-day"
 
-# Built-in tokyo-night sets surface_dim == panel_bg (#1a1b26), so separators
-# and inactive chrome vanish on Ghostty's matching background. Lift contrast.
-[theme.custom]
-# Slightly deeper than terminal bg so floating panels read as a layer.
-panel_bg = "#16161e"
-# Separators / active-workspace tint (was identical to bg).
-surface_dim = "#292e42"
-# Inactive pane borders + muted chrome (was #565f89 — too close to bg).
-overlay0 = "#7a83a8"
-# Hover/selected surfaces — keep Tokyo Night family, a step clearer.
-surface0 = "#24283b"
-surface1 = "#3b4261"
-# Active borders / focus — keep Ghostty TokyoNight blue.
-accent = "#7aa2f7"
+# No [theme.custom] / ui.accent overrides: those tokens are Night-specific
+# and would stick after auto_switch moves to tokyo-night-day.
 
 [terminal]
 # Inherit CWD from the source pane/workspace (best for agent splits).
@@ -78,8 +66,6 @@ width = "80%"
 height = "80%"
 
 [ui]
-# Kept in sync with theme.custom.accent (active pane borders / focus).
-accent = "#7aa2f7"
 show_agent_labels_on_pane_borders = true
 hide_tab_bar_when_single_tab = true
 # Attention queue: blocked/done agents float up across workspaces.

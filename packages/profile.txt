@@ -20,6 +20,9 @@ ripgrep
 fd
 fzf
 bat
+eza
+zoxide
+git-delta
 jq
 yq
 unzip
@@ -30,3 +33,6 @@ btop
 ghostty
 starship
 uv
+herdr
+codex
+cursor-cli

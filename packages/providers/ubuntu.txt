@@ -21,6 +21,9 @@ ripgrep            ripgrep
 fd                 fd-find
 fzf                fzf
 bat                bat
+eza                eza
+zoxide             zoxide
+git-delta          git-delta
 jq                 jq
 yq                 yq
 unzip              unzip
@@ -31,3 +34,6 @@ btop               btop
 ghostty            ghostty
 starship           starship
 uv                 uv
+herdr              herdr
+codex              codex
+cursor-cli         cursor-cli

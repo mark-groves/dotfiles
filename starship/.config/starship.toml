@@ -2,8 +2,9 @@ add_newline = true
 command_timeout = 700
 scan_timeout = 30
 
-# Palette switcher: change this one line to swap color themes.
-# Available: tokyo_night, catppuccin_mocha, gruvbox_dark, nord, kanagawa, rose_pine, osaka_jade
+# Palette switcher: tokyo_night / tokyo_night_day are selected at runtime
+# from the desktop light/dark setting. Other palettes stay available.
+# Available: tokyo_night, tokyo_night_day, catppuccin_mocha, gruvbox_dark, nord, kanagawa, rose_pine, osaka_jade
 palette = "tokyo_night"
 
 # bash doesn't support right prompt.
@@ -40,6 +41,28 @@ lang_data = "#e0af68"
 tooling = "#ff9e64"
 time = "#c0caf5"
 capsule = "#c0caf5"
+
+[palettes.tokyo_night_day]
+glow = "#2e7de9"
+halo = "#9854f1"
+dim = "#8990b3"
+err = "#c64343"
+ok = "#587539"
+warn = "#8c6c3e"
+git_clean = "#007197"
+git_dirty = "#c64343"
+cloud = "#9854f1"
+sys = "#9854f1"
+dir = "#007197"
+git = "#007197"
+git_meta = "#3760bf"
+lang_web = "#007197"
+lang_sys = "#587539"
+lang_func = "#9854f1"
+lang_data = "#8c6c3e"
+tooling = "#b15c00"
+time = "#3760bf"
+capsule = "#3760bf"
 
 [palettes.catppuccin_mocha]
 glow = "#cba6f7"

@@ -14,7 +14,9 @@ Current adapters:
 - `adapters/fedora.sh` / `providers/fedora.txt`
 - `adapters/ubuntu.sh` / `providers/ubuntu.txt`
 
-On Ubuntu, `uv`, `rust-analyzer`, and mikefarah `yq` are satisfied through
-`scripts/install-user-tools.sh` when apt cannot provide the expected binary.
-On Fedora, `starship` uses the same fallback because it is not in the default
-repos.
+On Ubuntu, `uv`, `rust-analyzer`, mikefarah `yq`, `herdr`, `codex`, and
+`cursor-cli` are satisfied through `scripts/install-user-tools.sh` when apt
+cannot provide the expected binary. Ubuntu also overlays the pinned Starship
+GitHub release when universe is older than that pin. On Fedora, `starship`
+and those same agent CLIs use the same fallback because they are not in the
+default repos. Cursor CLI installs as `agent`.

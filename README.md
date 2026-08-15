@@ -13,7 +13,7 @@ and system tuning—belongs in a separate repository.
 
 ## Managed configuration
 
-The default Stow deployment includes Git, Ghostty, Neovim/LazyVim, Bash, Starship, and Herdr. Package contents mirror paths
+The default Stow deployment includes Git, Ghostty, Neovim/LazyVim, Bash, Starship, Herdr, btop, lazygit, bat, and eza. Package contents mirror paths
 relative to `$HOME`. The managed Bash startup file loads additive fragments from
 `~/.bashrc.d`. If an existing `~/.bashrc` already loads that directory,
 deployment preserves it; otherwise Stow stops instead of replacing personal
@@ -57,8 +57,8 @@ for the OS package transaction.
 
 After packages are in place, adapters may still call
 `scripts/install-user-tools.sh` for profile entries that apt/dnf cannot satisfy
-cleanly (for example Starship on Fedora, `uv` on Ubuntu, mikefarah `yq`, and
-`rust-analyzer`). Starship and uv fallbacks download a pinned GitHub release and
+cleanly (for example Starship on Fedora, `uv` on Ubuntu, mikefarah `yq`,
+`rust-analyzer`, Herdr, Codex, and Cursor CLI). Starship and uv fallbacks download a pinned GitHub release and
 check sha256 before installing. You can also run that script directly for the
 optional lint binaries:
 
@@ -85,15 +85,19 @@ The package data is split into:
 Ubuntu notes:
 
 - Prefer Ubuntu 26.04+ so `lazygit`, `ghostty`, and `starship` are in universe.
-- `uv`, `rust-analyzer`, and mikefarah `yq` are treated as user-space tools
-  because apt either omits them or ships a different `yq`.
+- Universe `starship` can lag the prompt config; bootstrap overlays the pinned
+  GitHub release into `~/.local/bin` when apt is older.
+- `uv`, `rust-analyzer`, mikefarah `yq`, `herdr`, `codex`, and `cursor-cli`
+  are treated as user-space tools because apt either omits them or ships a
+  different `yq`. Cursor CLI installs the `agent` binary.
 - `fd` / `bat` may appear as `fdfind` / `batcat`; shell aliases and optional
   `~/.local/bin` shims cover the usual names.
 
 Fedora notes:
 
-- `starship` is not in the default repos, so the Fedora adapter installs it via
-  `scripts/install-user-tools.sh` when the binary is missing.
+- `starship`, `herdr`, `codex`, and `cursor-cli` are not in the default repos,
+  so the Fedora adapter installs them via `scripts/install-user-tools.sh`
+  when the binary is missing. Cursor CLI installs the `agent` binary.
 - `ghostty` and `lazygit` expect their usual COPR/third-party repos from
   workstation provisioning.
 
