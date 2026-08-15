@@ -2,11 +2,13 @@
 set -euo pipefail
 
 # Print "night" or "day" from the desktop color-scheme.
-# GNOME: prefer-dark -> night; default / prefer-light -> day.
-# Falls back to the XDG portal, then night.
+# GNOME sessions: prefer-dark -> night; default / prefer-light -> day.
+# Other desktops: XDG portal (avoids a stale GNOME schema on Plasma).
+# Last resort: night.
 
 scheme=""
-if command -v gsettings > /dev/null 2>&1; then
+desktop="${XDG_CURRENT_DESKTOP,,}"
+if [[ ":${desktop}:" == *:gnome:* ]] && command -v gsettings > /dev/null 2>&1; then
   scheme="$(gsettings get org.gnome.desktop.interface color-scheme 2> /dev/null || true)"
 fi
 
