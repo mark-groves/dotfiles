@@ -47,14 +47,19 @@ tokyo_night_fzf_colors() {
 }
 
 tokyo_night_starship() {
-  local style="$1" src dest palette
+  local style="$1" src dest palette current
   src="${HOME}/.config/starship.toml"
   dest="${XDG_CACHE_HOME:-$HOME/.cache}/starship-tokyo-night.toml"
   [[ -r "$src" ]] || return 0
+  current="$(sed -n 's/^palette = "\(.*\)"/\1/p' "$src" | head -n1)"
+  case "$current" in
+    tokyo_night | tokyo_night_day) ;;
+    *) return 0 ;;
+  esac
   palette="tokyo_night"
   [[ "$style" == day ]] && palette="tokyo_night_day"
   mkdir -p "$(dirname "$dest")"
-  sed "s/^palette = \".*\"/palette = \"${palette}\"/" "$src" > "$dest"
+  sed -E "s/^palette = \"tokyo_night(_day)?\"/palette = \"${palette}\"/" "$src" > "$dest"
   export STARSHIP_CONFIG="$dest"
 }
 
