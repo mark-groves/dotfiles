@@ -21,6 +21,8 @@ Tools:
   yq            mikefarah/yq (not the Ubuntu kislyuk wrapper)
   rust-analyzer rustup component, or GitHub binary without rustup
   ubuntu-shims  fd/bat name compatibility links for Debian packaging
+
+Starship and uv fallbacks download a pinned GitHub tarball and verify sha256.
 EOF
 }
 
@@ -49,25 +51,85 @@ host_arch() {
   esac
 }
 
+# Bump the release tag and both architecture checksums together.
+STARSHIP_RELEASE='1.26.0'
+UV_RELEASE='0.12.5'
+
+verify_sha256() {
+  local file="$1" expected="$2" actual
+  need_cmd sha256sum
+  actual="$(sha256sum -- "$file")" || die "failed to hash $file"
+  actual="${actual%% *}"
+  [[ "$actual" == "$expected" ]] ||
+    die "checksum mismatch for $(basename "$file"): expected $expected, got $actual"
+}
+
+download_verified_tarball() {
+  local url="$1" sha256="$2" dest_dir="$3"
+  need_cmd curl
+  need_cmd tar
+  curl -fsSL "$url" -o "$dest_dir/asset.tar.gz"
+  verify_sha256 "$dest_dir/asset.tar.gz" "$sha256"
+  tar -xzf "$dest_dir/asset.tar.gz" -C "$dest_dir"
+}
+
 install_starship() {
+  local arch target sha256 url tmp
   if command -v starship > /dev/null 2>&1; then
     printf 'starship already available: %s\n' "$(command -v starship)"
     return
   fi
-  need_cmd curl
   ensure_local_bin
-  curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b "$HOME/.local/bin"
+  arch="$(host_arch)"
+  case "$arch" in
+    amd64)
+      target='x86_64-unknown-linux-musl'
+      sha256='b7c232b0e8249d8e55a40beb79c5c43a7d370f3f9408bd215deb0170daeaadf3'
+      ;;
+    arm64)
+      target='aarch64-unknown-linux-musl'
+      sha256='dc30189378d2f2e287384e8a692d3f95ad1df64cf0e8c36aa9201516028aed6b'
+      ;;
+    *) die "unsupported architecture for starship: $arch" ;;
+  esac
+  url="https://github.com/starship/starship/releases/download/v${STARSHIP_RELEASE}/starship-${target}.tar.gz"
+  tmp="$(mktemp -d)"
+  # Expand now: locals are unset when the RETURN trap runs under set -u.
+  # shellcheck disable=SC2064
+  trap "rm -rf $(printf '%q' "$tmp")" RETURN
+  download_verified_tarball "$url" "$sha256" "$tmp"
+  install -m 0755 "$tmp/starship" "$HOME/.local/bin/starship"
+  printf 'Installed starship %s to %s\n' "$STARSHIP_RELEASE" "$HOME/.local/bin/starship"
 }
 
 install_uv() {
+  local arch target sha256 url tmp
   if command -v uv > /dev/null 2>&1; then
     printf 'uv already available: %s\n' "$(command -v uv)"
     return
   fi
-  need_cmd curl
   ensure_local_bin
-  curl -fsSL https://astral.sh/uv/install.sh | sh
-  ensure_local_bin
+  arch="$(host_arch)"
+  case "$arch" in
+    amd64)
+      target='x86_64-unknown-linux-gnu'
+      sha256='68a509da24b06b4223a1c0175fb5eb5bc79342b76cbeff0cfe51ac3f5b17b6b2'
+      ;;
+    arm64)
+      target='aarch64-unknown-linux-gnu'
+      sha256='9bf43b4d1a07665bf64d4c4e710930b382321a785e0eb10aac07f46471f86a31'
+      ;;
+    *) die "unsupported architecture for uv: $arch" ;;
+  esac
+  url="https://github.com/astral-sh/uv/releases/download/${UV_RELEASE}/uv-${target}.tar.gz"
+  tmp="$(mktemp -d)"
+  # Expand now: locals are unset when the RETURN trap runs under set -u.
+  # shellcheck disable=SC2064
+  trap "rm -rf $(printf '%q' "$tmp")" RETURN
+  download_verified_tarball "$url" "$sha256" "$tmp"
+  install -m 0755 "$tmp/uv-${target}/uv" "$HOME/.local/bin/uv"
+  install -m 0755 "$tmp/uv-${target}/uvx" "$HOME/.local/bin/uvx"
+  printf 'Installed uv %s to %s\n' "$UV_RELEASE" "$HOME/.local/bin/uv"
 }
 
 install_github_release_binary() {

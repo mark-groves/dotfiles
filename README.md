@@ -58,8 +58,9 @@ for the OS package transaction.
 After packages are in place, adapters may still call
 `scripts/install-user-tools.sh` for profile entries that apt/dnf cannot satisfy
 cleanly (for example Starship on Fedora, `uv` on Ubuntu, mikefarah `yq`, and
-`rust-analyzer`). You can also run that script directly for the optional lint
-binaries:
+`rust-analyzer`). Starship and uv fallbacks download a pinned GitHub release and
+check sha256 before installing. You can also run that script directly for the
+optional lint binaries:
 
 ```bash
 ./scripts/install-user-tools.sh
